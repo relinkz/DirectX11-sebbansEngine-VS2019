@@ -2,16 +2,18 @@
 #include "ErrorLogger.h"
 #include <memory>
 
+class WindowContainer;
+
 class RenderWindow
 {
 public:
 	bool ProcessMessages();
 
-	RenderWindow(HINSTANCE hInstance, const std::string& wTitle, const std::string& wClassName, const uint32_t width, const uint32_t height);
+	bool Initialize(WindowContainer* pWindowContainer, HINSTANCE hInstance, const std::string& wTitle, const std::string& wClassName, const uint32_t width, const uint32_t height);
 	~RenderWindow();
 
 private:
-	void m_CreateWindowHandle();
+	bool m_CreateWindowHandle(WindowContainer* pWindowContainer);
 	void m_RegisterWindowClass();
 	HWND m_handle;
 	HINSTANCE m_instance;
