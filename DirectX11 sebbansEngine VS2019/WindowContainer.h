@@ -1,6 +1,7 @@
 #pragma once
 #include "RenderWindow.h"
 #include "Keyboard/Keyboard.h"
+#include "Mouse/Mouse.h"
 
 class WindowContainer
 {
@@ -9,5 +10,6 @@ public:
 protected:
 	std::unique_ptr<RenderWindow> m_renderWindow;
 	Keyboard m_keyboard;
+	Mouse m_mouse;
 };
 

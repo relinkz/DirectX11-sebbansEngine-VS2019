@@ -10,6 +10,9 @@ LRESULT WindowContainer::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     // rerouted from RenderWindow
 	switch (uMsg)
 	{
+		/*
+		MOUSE HANDLING
+		*/
 		case WM_KEYDOWN:
 		{
 			unsigned char keycode = static_cast<unsigned char>(wParam);
@@ -47,6 +50,79 @@ LRESULT WindowContainer::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 			}
 			return 0;
 		}
+		/*
+		MOUSE HANDLING
+		*/
+		case WM_MOUSEMOVE:
+		{
+			MousePoint mousePos = {LOWORD(lParam), HIWORD(lParam)};
+			m_mouse.OnMouseMove(mousePos);
+
+			return 0;
+		}
+
+		case WM_LBUTTONDOWN:
+		{
+			MousePoint mousePos = { LOWORD(lParam), HIWORD(lParam) };
+			m_mouse.OnLeftPressed(mousePos);
+
+			return 0;
+		}
+
+		case WM_RBUTTONDOWN:
+		{
+			MousePoint mousePos = { LOWORD(lParam), HIWORD(lParam) };
+			m_mouse.OnRightPressed(mousePos);
+
+			return 0;
+		}
+
+		case WM_MBUTTONDOWN:
+		{
+			MousePoint mousePos = { LOWORD(lParam), HIWORD(lParam) };
+			m_mouse.OnMidPressed(mousePos);
+
+			return 0;
+		}
+
+		case WM_LBUTTONUP:
+		{
+			MousePoint mousePos = { LOWORD(lParam), HIWORD(lParam) };
+			m_mouse.OnLeftReleased(mousePos);
+
+			return 0;
+		}
+
+		case WM_RBUTTONUP:
+		{
+			MousePoint mousePos = { LOWORD(lParam), HIWORD(lParam) };
+			m_mouse.OnRightReleased(mousePos);
+
+			return 0;
+		}
+
+		case WM_MBUTTONUP:
+		{
+			MousePoint mousePos = { LOWORD(lParam), HIWORD(lParam) };
+			m_mouse.OnMidReleased(mousePos);
+
+			return 0;
+		}
+
+		case WM_MOUSEWHEEL:
+		{
+			MousePoint wheelPoint = { LOWORD(lParam), HIWORD(lParam) };
+
+			if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+			{
+				m_mouse.OnWheelUp(wheelPoint);
+			}
+			else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
+			{
+				m_mouse.OnWheelDown(wheelPoint);
+			}
+		}
+
 		default:
 		{
 			return DefWindowProc(hwnd, uMsg, wParam, lParam);
