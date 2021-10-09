@@ -52,6 +52,11 @@ void Mouse::OnMouseMove(const MousePoint& mousePos)
 	m_eventBuffer.push({ MouseEvent::EventType::Move, mousePos });
 }
 
+void Mouse::OnMouseMoveRaw(const MousePoint& mousePos)
+{
+	m_eventBuffer.push({ MouseEvent::EventType::RAW_MOVE, mousePos });
+}
+
 bool Mouse::IsLeftDown() const
 {
 	return m_leftIsDown;

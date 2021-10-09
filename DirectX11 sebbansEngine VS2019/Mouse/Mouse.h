@@ -15,6 +15,7 @@ public:
 	void OnWheelUp(const MousePoint& mousePos);
 	void OnWheelDown(const MousePoint& mousePos);
 	void OnMouseMove(const MousePoint& mousePos);
+	void OnMouseMoveRaw(const MousePoint& mousePos);
 
 	bool IsLeftDown() const;
 	bool IsMidDown() const;

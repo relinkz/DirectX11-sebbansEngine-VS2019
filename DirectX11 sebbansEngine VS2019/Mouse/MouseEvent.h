@@ -1,8 +1,8 @@
 #pragma once
 struct MousePoint
 {
-	unsigned int x;
-	unsigned int y;
+	int x;
+	int y;
 };
 
 class MouseEvent
