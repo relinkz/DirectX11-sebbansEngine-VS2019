@@ -1,6 +1,7 @@
 #include "Keyboard.h"
 
-Keyboard::Keyboard()
+Keyboard::Keyboard() : m_autoRepeatKeys(false)
+    , m_autoRepeatChars(false)
 {
     for (int i = 0; i < 256; i++)
     {
@@ -82,12 +83,12 @@ void Keyboard::DisableAutoRepeatChars()
     m_autoRepeatChars = false;
 }
 
-bool Keyboard::IsKeysAutoRepeat()
+bool Keyboard::IsKeysAutoRepeat() const
 {
     return m_autoRepeatKeys;
 }
 
-bool Keyboard::IsCharsAutoRepeat()
+bool Keyboard::IsCharsAutoRepeat() const
 {
     return m_autoRepeatChars;
 }

@@ -22,8 +22,8 @@ public:
 	void EnableAutoRepeatChars();
 	void DisableAutoRepeatKeys();
 	void DisableAutoRepeatChars();
-	bool IsKeysAutoRepeat();
-	bool IsCharsAutoRepeat();
+	bool IsKeysAutoRepeat() const;
+	bool IsCharsAutoRepeat() const;
 
 private:
 	bool m_autoRepeatKeys;
