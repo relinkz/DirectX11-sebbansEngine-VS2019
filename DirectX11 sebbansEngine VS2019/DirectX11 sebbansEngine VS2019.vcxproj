@@ -150,6 +150,8 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
     <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="Keyboard\Keyboard.cpp" />
+    <ClCompile Include="Keyboard\KeyboardEvent.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
     <ClCompile Include="WindowContainer.cpp" />
@@ -158,6 +160,8 @@
     <ClInclude Include="Engine.h" />
     <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="Keyboard\Keyboard.h" />
+    <ClInclude Include="Keyboard\KeyboardEvent.h" />
     <ClInclude Include="RenderWindow.h" />
     <ClInclude Include="WindowContainer.h" />
   </ItemGroup>

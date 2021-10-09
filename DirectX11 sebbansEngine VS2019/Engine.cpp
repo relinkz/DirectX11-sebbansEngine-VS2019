@@ -18,3 +18,16 @@ bool Engine::ProcessMessages()
     }
     return true;
 }
+
+void Engine::Update()
+{
+    while (!m_keyboard.CharBufferIsEmpty())
+    {
+        unsigned char ch = m_keyboard.ReadChar();
+    }
+
+    while (!m_keyboard.KeyBufferIsEmpty())
+    {
+        auto keyboardEvent = m_keyboard.ReadKey();
+    }
+}
