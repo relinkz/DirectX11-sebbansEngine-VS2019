@@ -1,8 +1,8 @@
 #include "KeyboardEvent.h"
 
-KeyboardEvent::KeyboardEvent()
-	: m_type(EventType::Invalid)
-	, m_key('0')
+KeyboardEvent::KeyboardEvent() :
+	m_type(EventType::Invalid),
+	m_key('0')
 {
 }
 

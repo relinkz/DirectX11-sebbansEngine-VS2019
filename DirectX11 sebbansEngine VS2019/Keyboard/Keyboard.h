@@ -10,7 +10,7 @@ public:
 	bool KeyIsPressed(const unsigned char keycode) const;
 	bool KeyBufferIsEmpty() const;
 	bool CharBufferIsEmpty() const;
-	
+
 	KeyboardEvent ReadKey();
 	unsigned char ReadChar();
 

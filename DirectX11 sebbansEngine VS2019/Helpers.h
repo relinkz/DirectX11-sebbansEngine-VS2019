@@ -4,6 +4,6 @@ namespace helpers
 {
 	namespace strings
 	{
-		std::wstring StringToWide(const std::string &str);
+		std::wstring StringToWide(const std::string& str);
 	}
 }

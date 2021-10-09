@@ -66,16 +66,16 @@ LRESULT CALLBACK handleMsgRedirect(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 {
 	switch (uMsg)
 	{
-		case WM_CLOSE:
-		{
-			DestroyWindow(hwnd);
-			return 0;
-		}
-		default:
-		{
-			WindowContainer* const pWindow = reinterpret_cast<WindowContainer*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-			return pWindow->WindowProc(hwnd, uMsg, wParam, lParam);
-		}
+	case WM_CLOSE:
+	{
+		DestroyWindow(hwnd);
+		return 0;
+	}
+	default:
+	{
+		WindowContainer* const pWindow = reinterpret_cast<WindowContainer*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+		return pWindow->WindowProc(hwnd, uMsg, wParam, lParam);
+	}
 	}
 }
 
@@ -83,30 +83,30 @@ LRESULT CALLBACK HandleMessageSetup(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 {
 	switch (uMsg)
 	{
-		case WM_NCCREATE:
-		{
-			const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
-			WindowContainer* pWindow = reinterpret_cast<WindowContainer*>(pCreate->lpCreateParams);
+	case WM_NCCREATE:
+	{
+		const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
+		WindowContainer* pWindow = reinterpret_cast<WindowContainer*>(pCreate->lpCreateParams);
 
-			if (!pWindow)
-			{
-				errorlogger::Log("Critical error: Pointer to window container is null during WM_NCCREATE");
-				exit(-1);
-			}
+		if (!pWindow)
+		{
+			errorlogger::Log("Critical error: Pointer to window container is null during WM_NCCREATE");
+			exit(-1);
+		}
 
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindow));
-			SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(handleMsgRedirect));
-			return pWindow->WindowProc(hwnd, uMsg, wParam, lParam);
-		}
-		case WM_KEYDOWN:
-		{
-			unsigned char keycode = static_cast<unsigned char>(wParam);
-			return 0;
-		}
-		default:
-		{
-			return DefWindowProc(hwnd, uMsg, wParam, lParam);
-		}
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindow));
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(handleMsgRedirect));
+		return pWindow->WindowProc(hwnd, uMsg, wParam, lParam);
+	}
+	case WM_KEYDOWN:
+	{
+		unsigned char keycode = static_cast<unsigned char>(wParam);
+		return 0;
+	}
+	default:
+	{
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	}
 	}
 }
 
