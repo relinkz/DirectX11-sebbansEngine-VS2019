@@ -111,23 +111,62 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 		return false;
 	}
 
+	// output merger
 	ID3D11DepthStencilView* dsv = NULL;
 	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), dsv);
+
+	D3D11_VIEWPORT viewport;
+	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = width;
+	viewport.Height = height;
+
+	// rasterizer
+	m_deviceContext->RSSetViewports(1, &viewport);
 
 	return true;
 }
 
 bool Graphics::InitializeShaders()
 {
+	if (!InitializeVertexShader())
+	{
+		return false;
+	}
+	
+	if (!InitializePixelShader())
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool Graphics::InitializeVertexShader()
+{
 	m_vertexShader = std::make_unique<VertexShader>();
-	std::wstring ShaderPath = m_vertexShader->GetShaderPath();
+	const std::wstring vertexShaderPath = m_vertexShader->GetShaderPath() + L"VertexShader.cso";
 
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	if (!m_vertexShader->Initialize(this->m_device, ShaderPath + L"VertexShader.cso", layout, ARRAYSIZE(layout)))
+	if (!m_vertexShader->Initialize(m_device, vertexShaderPath, layout, ARRAYSIZE(layout)))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool Graphics::InitializePixelShader()
+{
+	m_pixelShader = std::make_unique<PixelShader>();
+	const std::wstring pixelShaderPath = m_vertexShader->GetShaderPath() + L"PixelShader.cso";
+	if (!m_pixelShader->Initialize(m_device, pixelShaderPath))
 	{
 		return false;
 	}

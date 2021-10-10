@@ -13,6 +13,8 @@ private:
 	bool CreateRenderTargetViewWithSwapchain();
 	bool InitializeDirectX(HWND hwnd, const int width, const int height);
 	bool InitializeShaders();
+	bool InitializeVertexShader();
+	bool InitializePixelShader();
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -24,4 +26,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 
 	std::unique_ptr<VertexShader> m_vertexShader;
+	std::unique_ptr<PixelShader> m_pixelShader;
 };
