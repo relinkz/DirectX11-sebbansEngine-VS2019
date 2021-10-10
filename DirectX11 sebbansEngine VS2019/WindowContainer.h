@@ -2,6 +2,7 @@
 #include "RenderWindow.h"
 #include "Keyboard/Keyboard.h"
 #include "Mouse/Mouse.h"
+#include "Graphics/Graphics.h"
 
 class WindowContainer
 {
@@ -12,5 +13,6 @@ protected:
 	std::unique_ptr<RenderWindow> m_renderWindow;
 	Keyboard m_keyboard;
 	Mouse m_mouse;
+	Graphics m_gfx;
 };
 

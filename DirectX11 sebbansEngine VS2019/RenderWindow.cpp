@@ -30,6 +30,11 @@ bool RenderWindow::ProcessMessages()
 	return true;
 }
 
+HWND RenderWindow::GetHWindow() const
+{
+	return m_handle;
+}
+
 bool RenderWindow::Initialize(WindowContainer* pWindowContainer, HINSTANCE hInstance, const std::string& wTitle, const std::string& wClassName, const uint32_t width, const uint32_t height)
 {
 	m_handle = nullptr;
@@ -135,7 +140,7 @@ bool RenderWindow::m_CreateWindowHandle(WindowContainer* pWindowContainer)
 	ShowWindow(m_handle, SW_SHOW);
 	SetForegroundWindow(m_handle);
 	SetFocus(m_handle);
-	return false;
+	return true;
 }
 
 void RenderWindow::m_RegisterWindowClass()

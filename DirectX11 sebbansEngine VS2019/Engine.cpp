@@ -7,6 +7,12 @@ bool Engine::Initialize(HINSTANCE hInstance, const std::string& wTitle, const st
 	{
 		return false;
 	}
+
+	if (!m_gfx.Initialize(m_renderWindow->GetHWindow(), width, height))
+	{
+		return false;
+	}
+
 	return true;
 }
 
