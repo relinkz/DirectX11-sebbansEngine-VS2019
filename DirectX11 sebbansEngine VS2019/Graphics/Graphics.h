@@ -23,9 +23,10 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapchain;
 	// A render-target-view interface identifies the render-target subresources that can be accessed during rendering.
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
-	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;
 
 	std::unique_ptr<IVertexShader> m_vertexShader;
 	std::unique_ptr<IPixelShader> m_pixelShader;
+	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
 	std::unique_ptr<IResourceBuffer> m_vertexBuffer;
 };
