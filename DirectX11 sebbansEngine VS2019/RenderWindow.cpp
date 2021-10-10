@@ -5,7 +5,7 @@ bool RenderWindow::ProcessMessages()
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 
-	if (PeekMessage(
+	while (PeekMessage(
 		&msg,
 		m_handle,
 		0,

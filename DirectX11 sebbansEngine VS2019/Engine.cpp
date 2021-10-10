@@ -42,3 +42,8 @@ void Engine::Update()
 		auto me = m_mouse.ReadEvent();
 	}
 }
+
+void Engine::RenderFrame()
+{
+	m_gfx.RenderFrame();
+}

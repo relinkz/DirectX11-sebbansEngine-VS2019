@@ -5,8 +5,12 @@ class Graphics
 {
 public:
 	bool Initialize(HWND hwnd, const int width, const int height);
+	void RenderFrame() const;
 private:
+	bool createSwapChain(HWND hwnd, const int width, const int height);
+	bool createRenderTargetViewWithSwapchain();
 	bool InitializeDirectX(HWND hwnd, const int width, const int height);
+
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
 	// The ID3D11DeviceContext interface represents a device context which generates rendering commands.
