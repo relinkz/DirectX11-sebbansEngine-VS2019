@@ -26,7 +26,7 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 
 void Graphics::RenderFrame() const
 {
-	float bgColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	float bgColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), bgColor);
 	m_deviceContext->IASetInputLayout(m_vertexShader->GetInputLayout());
 	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

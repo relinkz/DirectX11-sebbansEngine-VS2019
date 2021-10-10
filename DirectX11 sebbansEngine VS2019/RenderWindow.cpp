@@ -58,7 +58,9 @@ bool RenderWindow::Initialize(WindowContainer* pWindowContainer, HINSTANCE hInst
 RenderWindow::~RenderWindow()
 {
 	m_windowTitle.release();
+	m_windowTitleWide.release();
 	m_windowClassName.release();
+	m_windowClassNameWide.release();
 
 	if (m_handle != nullptr)
 	{

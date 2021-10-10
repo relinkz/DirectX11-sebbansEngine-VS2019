@@ -4,11 +4,12 @@
 
 bool Simple3pVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device)
 {
+	// clock wise
 	Vertex v[]
 	{
-		Vertex(0.0f, -0.11f), // Center Point
-		Vertex(-0.11f, 0.0f), // Left Point
-		Vertex(0.11f, 0.0f), // Right Point
+		Vertex(-0.5f, -0.5f, 1.0f, 0.0f, 0.0f), // Bot left Point
+		Vertex(0.0f, 0.5f, 0.0f, 1.0f, 0.0f), // Top mid Point
+		Vertex(0.5f, -0.5f, 0.0f, 0.0f, 1.0f), // Right Point
 	};
 
 	m_nrOfVerticies = ARRAYSIZE(v);
