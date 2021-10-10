@@ -1,5 +1,4 @@
 #pragma once
-#include "AdapterReader.h"
 #include "IShaders.h"
 #include <memory>
 

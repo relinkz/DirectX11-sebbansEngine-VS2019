@@ -1,5 +1,7 @@
 #include "Graphics.h"
 #include "ShaderFactory.h"
+#include "AdapterReader.h"
+
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 {

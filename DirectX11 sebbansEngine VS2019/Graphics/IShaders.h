@@ -1,13 +1,7 @@
 #pragma once
 #include <string>
 #include <wrl/client.h>
-
-struct ID3D11Device;
-struct D3D11_INPUT_ELEMENT_DESC;
-struct ID3D11VertexShader;
-struct ID3D11PixelShader;
-struct ID3D11InputLayout;
-struct ID3D10Blob;
+#include <d3d11.h>
 
 class IShader
 {
