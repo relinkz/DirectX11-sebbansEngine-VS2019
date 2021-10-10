@@ -122,26 +122,13 @@ bool Graphics::InitializeShaders()
 	m_vertexShader = std::make_unique<VertexShader>();
 	std::wstring ShaderPath = m_vertexShader->GetShaderPath();
 
-	if (!m_vertexShader->Initialize(this->m_device, ShaderPath + L"VertexShader.cso"))
-	{
-		return false;
-	}
-
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	UINT numElements = ARRAYSIZE(layout);
-
-	HRESULT hr = m_device->CreateInputLayout(layout, numElements, 
-		m_vertexShader->GetBuffer()->GetBufferPointer(),
-		m_vertexShader->GetBuffer()->GetBufferSize(), 
-		m_inputLayout.GetAddressOf());
-	
-	if (FAILED(hr))
+	if (!m_vertexShader->Initialize(this->m_device, ShaderPath + L"VertexShader.cso", layout, ARRAYSIZE(layout)))
 	{
-		errorlogger::Log(hr, "Failed to create Input layout");
 		return false;
 	}
 

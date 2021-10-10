@@ -23,6 +23,5 @@ private:
 	// A render-target-view interface identifies the render-target subresources that can be accessed during rendering.
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 	std::unique_ptr<VertexShader> m_vertexShader;
 };
