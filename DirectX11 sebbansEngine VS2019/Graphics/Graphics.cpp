@@ -28,17 +28,23 @@ void Graphics::RenderFrame() const
 {
 	float bgColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), bgColor);
+	m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+
 	m_deviceContext->IASetInputLayout(m_vertexShader->GetInputLayout());
 	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_deviceContext->RSSetState(m_rasterizerState.Get());
 	m_deviceContext->VSSetShader(m_vertexShader->GetShader(), NULL, 0);
+	m_deviceContext->RSSetState(m_rasterizerState.Get());
 	m_deviceContext->PSSetShader(m_pixelShader->GetShader(), NULL, 0);
+	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
-	m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer->GetBufferAddress(), &stride, &offset);
 
-	m_deviceContext->Draw(m_vertexBuffer->GetNrOfVerticies(), 0);
+	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
+	{
+		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
+		m_deviceContext->Draw(m_vertexBuffer.at(i)->GetNrOfVerticies(), 0);
+	}
 
 	m_swapchain->Present(1, NULL);
 }
@@ -120,6 +126,57 @@ bool Graphics::CreateRenderTargetViewWithSwapchain()
 	return true;
 }
 
+bool Graphics::CreateDepthStencil(const int width, const int height)
+{
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+	depthStencilDesc.Width = width;
+	depthStencilDesc.Height = height;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	auto hr = m_device->CreateTexture2D(&depthStencilDesc, NULL, m_depthStencilTexture.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to create depth stencil texture buffer");
+		return false;
+	}
+
+	hr = m_device->CreateDepthStencilView(m_depthStencilTexture.Get(), NULL, m_depthStencilView.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to create depth stencil view");
+		return false;
+	}
+
+	return true;
+}
+
+bool Graphics::CreateDepthStencilState()
+{
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	ZeroMemory(&depthStencilDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+
+	depthStencilDesc.DepthEnable = true;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+	auto hr = m_device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to create depth stencil view");
+		return false;
+	}
+
+	return true;
+}
+
 bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 {
 	if (!CreateSwapChain(hwnd, width, height))
@@ -132,9 +189,18 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 		return false;
 	}
 
+	if (!CreateDepthStencil(width, height))
+	{
+		return false;
+	}
+
 	// output merger
-	ID3D11DepthStencilView* dsv = NULL;
-	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), dsv);
+	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+
+	if (!CreateDepthStencilState())
+	{
+		return false;
+	}
 
 	D3D11_VIEWPORT viewport;
 	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
@@ -143,6 +209,8 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 	viewport.TopLeftY = 0;
 	viewport.Width = static_cast<FLOAT>(width);
 	viewport.Height = static_cast<FLOAT>(height);
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
 
 	// rasterizer
 	m_deviceContext->RSSetViewports(1, &viewport);
@@ -184,10 +252,51 @@ bool Graphics::InitializeShaders()
 bool Graphics::InitializeScene()
 {
 	ResourceBufferFactory resourceFactory = ResourceBufferFactory();
-	m_vertexBuffer = resourceFactory.CreatePointVertexBuffer(m_device);
-	if (!m_vertexBuffer)
+
+	// clock wise
+	std::vector<Vertex> redTriangle
+	{
+		// depth set in Vertex
+		Vertex(-0.6f, -0.6f, 1.0f, 0.0f, 0.0f), // Bot left Point
+		Vertex(0.0f, 0.6f, 1.0f, 0.0f, 0.0f), // Top mid Point
+		Vertex(0.6f, -0.6f, 1.0f, 0.0f, 0.0f), // Right Point
+	};
+
+	auto redTriangleBuff = resourceFactory.CreateSimpleTriangleVertexBuffer(m_device, redTriangle);
+	if (!redTriangleBuff)
 	{
 		return false;
 	}
+
+	std::vector<Vertex> blueTriangle
+	{
+		Vertex(-0.3f, -0.3f, 0.5f, 0.0f, 0.0f, 1.0f), // Bot left Point
+		Vertex(0.0f, 0.3f, 0.5f, 0.0f, 0.0f, 1.0f), // Top mid Point
+		Vertex(0.3f, -0.3f, 0.5f, 0.0f, 0.0f, 1.0f), // Right Point
+	};
+
+	auto blueTriangleBuff = resourceFactory.CreateSimpleTriangleVertexBuffer(m_device, blueTriangle);
+	if (!blueTriangleBuff)
+	{
+		return false;
+	}
+
+	std::vector<Vertex> greenTriangle
+	{
+		Vertex(-0.1f, -0.1f, 0.3f, 0.0f, 1.0f, 0.0f), // Bot left Point
+		Vertex(0.0f, 0.1f, 0.3f, 0.0f, 1.0f, 0.0f), // Top mid Point
+		Vertex(0.1f, -0.1f, 0.3f, 0.0f, 1.0f, 0.0f), // Right Point
+	};
+
+	auto greenTriangleBuff = resourceFactory.CreateSimpleTriangleVertexBuffer(m_device, greenTriangle);
+	if (!greenTriangleBuff)
+	{
+		return false;
+	}
+
+	m_vertexBuffer.push_back(std::move(blueTriangleBuff));
+	m_vertexBuffer.push_back(std::move(redTriangleBuff));
+	m_vertexBuffer.push_back(std::move(greenTriangleBuff));
+
 	return true;
 }

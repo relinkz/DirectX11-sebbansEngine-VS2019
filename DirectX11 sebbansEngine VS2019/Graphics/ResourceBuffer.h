@@ -1,10 +1,10 @@
 #pragma once
 #include "IResourceBuffer.h"
 
-class Simple3pVertexBuffer : public IResourceBuffer
+class SimpleTriangleVertexBuffer : public IResourceBuffer
 {
 public:
-	bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device) override;
+	bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<Vertex> vData) override;
 	virtual UINT GetNrOfVerticies() const override;
 	virtual ID3D11Buffer** GetBufferAddress() override;
 private:

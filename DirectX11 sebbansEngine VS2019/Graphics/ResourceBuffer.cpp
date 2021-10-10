@@ -1,18 +1,9 @@
 #include "ResourceBuffer.h"
-#include "Vertex.h"
 #include "../ErrorLogger.h"
 
-bool Simple3pVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device)
+bool SimpleTriangleVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<Vertex> vData)
 {
-	// clock wise
-	Vertex v[]
-	{
-		Vertex(-0.5f, -0.5f, 1.0f, 0.0f, 0.0f), // Bot left Point
-		Vertex(0.0f, 0.5f, 0.0f, 1.0f, 0.0f), // Top mid Point
-		Vertex(0.5f, -0.5f, 0.0f, 0.0f, 1.0f), // Right Point
-	};
-
-	m_nrOfVerticies = ARRAYSIZE(v);
+	m_nrOfVerticies = vData.size();
 
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
@@ -25,7 +16,7 @@ bool Simple3pVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& devi
 
 	D3D11_SUBRESOURCE_DATA vertexBufferData;
 	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
-	vertexBufferData.pSysMem = v;
+	vertexBufferData.pSysMem = vData.data();
 
 	auto hr = device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_vertexBuffer.GetAddressOf());
 	if (FAILED(hr))
@@ -37,12 +28,12 @@ bool Simple3pVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	return true;
 }
 
-UINT Simple3pVertexBuffer::GetNrOfVerticies() const
+UINT SimpleTriangleVertexBuffer::GetNrOfVerticies() const
 {
 	return m_nrOfVerticies;
 }
 
-ID3D11Buffer** Simple3pVertexBuffer::GetBufferAddress()
+ID3D11Buffer** SimpleTriangleVertexBuffer::GetBufferAddress()
 {
 	return m_vertexBuffer.GetAddressOf();
 }

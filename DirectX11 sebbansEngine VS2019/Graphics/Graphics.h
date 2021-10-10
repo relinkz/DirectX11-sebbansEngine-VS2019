@@ -11,6 +11,8 @@ public:
 private:
 	bool CreateSwapChain(HWND hwnd, const int width, const int height);
 	bool CreateRenderTargetViewWithSwapchain();
+	bool CreateDepthStencil(const int width, const int height);
+	bool CreateDepthStencilState();
 	bool InitializeDirectX(HWND hwnd, const int width, const int height);
 	bool InitializeShaders();
 	bool InitializeScene();
@@ -23,10 +25,15 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapchain;
 	// A render-target-view interface identifies the render-target subresources that can be accessed during rendering.
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+	// Settings for the rasterizer, clock wise read order and wireframe
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;
+
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilTexture;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 
 	std::unique_ptr<IVertexShader> m_vertexShader;
 	std::unique_ptr<IPixelShader> m_pixelShader;
 	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
-	std::unique_ptr<IResourceBuffer> m_vertexBuffer;
+	std::vector<std::unique_ptr<IResourceBuffer>> m_vertexBuffer;
 };

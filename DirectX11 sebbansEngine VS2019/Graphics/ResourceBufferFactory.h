@@ -6,5 +6,5 @@
 class ResourceBufferFactory
 {
 public:
-	std::unique_ptr<IResourceBuffer> CreatePointVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device);
+	std::unique_ptr<IResourceBuffer> CreateSimpleTriangleVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<Vertex> vData);
 };
