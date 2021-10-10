@@ -1,6 +1,6 @@
 #pragma once
 #include "AdapterReader.h"
-#include "Shaders.h"
+#include "IShaders.h"
 #include <memory>
 
 class Graphics
@@ -13,8 +13,6 @@ private:
 	bool CreateRenderTargetViewWithSwapchain();
 	bool InitializeDirectX(HWND hwnd, const int width, const int height);
 	bool InitializeShaders();
-	bool InitializeVertexShader();
-	bool InitializePixelShader();
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -25,6 +23,6 @@ private:
 	// A render-target-view interface identifies the render-target subresources that can be accessed during rendering.
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 
-	std::unique_ptr<VertexShader> m_vertexShader;
-	std::unique_ptr<PixelShader> m_pixelShader;
+	std::unique_ptr<IVertexShader> m_vertexShader;
+	std::unique_ptr<IPixelShader> m_pixelShader;
 };

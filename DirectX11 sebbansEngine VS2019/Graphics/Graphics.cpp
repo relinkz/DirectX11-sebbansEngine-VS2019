@@ -1,4 +1,5 @@
 #include "Graphics.h"
+#include "ShaderFactory.h"
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 {
@@ -120,8 +121,8 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = width;
-	viewport.Height = height;
+	viewport.Width = static_cast<FLOAT>(width);
+	viewport.Height = static_cast<FLOAT>(height);
 
 	// rasterizer
 	m_deviceContext->RSSetViewports(1, &viewport);
@@ -131,42 +132,15 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 
 bool Graphics::InitializeShaders()
 {
-	if (!InitializeVertexShader())
-	{
-		return false;
-	}
-	
-	if (!InitializePixelShader())
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool Graphics::InitializeVertexShader()
-{
-	m_vertexShader = std::make_unique<VertexShader>();
-	const std::wstring vertexShaderPath = m_vertexShader->GetShaderPath() + L"VertexShader.cso";
-
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	if (!m_vertexShader->Initialize(m_device, vertexShaderPath, layout, ARRAYSIZE(layout)))
+	ShaderFactory shaderFactory = ShaderFactory();
+	m_vertexShader = shaderFactory.CreateDefaultVertexShader(m_device);
+	if (!m_vertexShader)
 	{
 		return false;
 	}
 
-	return true;
-}
-
-bool Graphics::InitializePixelShader()
-{
-	m_pixelShader = std::make_unique<PixelShader>();
-	const std::wstring pixelShaderPath = m_vertexShader->GetShaderPath() + L"PixelShader.cso";
-	if (!m_pixelShader->Initialize(m_device, pixelShaderPath))
+	m_pixelShader = shaderFactory.CreateDefaultPixelShader(m_device);
+	if (!m_pixelShader)
 	{
 		return false;
 	}
