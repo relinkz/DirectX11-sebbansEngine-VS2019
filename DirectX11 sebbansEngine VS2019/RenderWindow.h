@@ -18,10 +18,10 @@ private:
 	void m_RegisterWindowClass();
 	HWND m_handle;
 	HINSTANCE m_instance;
-	std::unique_ptr<std::string> m_windowTitle;
-	std::unique_ptr<std::wstring> m_windowTitleWide;
-	std::unique_ptr<std::string> m_windowClassName;
-	std::unique_ptr<std::wstring> m_windowClassNameWide;
+	std::string m_windowTitle;
+	std::wstring m_windowTitleWide;
+	std::string m_windowClassName;
+	std::wstring m_windowClassNameWide;
 	std::uint32_t m_windowWidth;
 	std::uint32_t m_windowHeight;
 };

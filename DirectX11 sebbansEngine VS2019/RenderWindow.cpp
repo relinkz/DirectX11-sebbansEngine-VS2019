@@ -21,7 +21,7 @@ bool RenderWindow::ProcessMessages()
 		if (!IsWindow(m_handle))
 		{
 			m_handle = nullptr;
-			UnregisterClass(m_windowClassNameWide->c_str(), m_instance);
+			UnregisterClass(m_windowClassNameWide.c_str(), m_instance);
 
 			return false;
 		}
@@ -39,10 +39,10 @@ bool RenderWindow::Initialize(WindowContainer* pWindowContainer, HINSTANCE hInst
 {
 	m_handle = nullptr;
 	m_instance = hInstance;
-	m_windowTitle = std::make_unique<std::string>(wTitle);
-	m_windowTitleWide = std::make_unique<std::wstring>(helpers::strings::StringToWide(wTitle));
-	m_windowClassName = std::make_unique<std::string>(wClassName);
-	m_windowClassNameWide = std::make_unique<std::wstring>(helpers::strings::StringToWide(wTitle));
+	m_windowTitle = wTitle;
+	m_windowTitleWide = helpers::strings::StringToWide(wTitle);
+	m_windowClassName = wClassName;
+	m_windowClassNameWide = helpers::strings::StringToWide(wTitle);
 	m_windowWidth = width;
 	m_windowHeight = height;
 
@@ -57,14 +57,9 @@ bool RenderWindow::Initialize(WindowContainer* pWindowContainer, HINSTANCE hInst
 
 RenderWindow::~RenderWindow()
 {
-	m_windowTitle.release();
-	m_windowTitleWide.release();
-	m_windowClassName.release();
-	m_windowClassNameWide.release();
-
 	if (m_handle != nullptr)
 	{
-		UnregisterClass(m_windowClassNameWide->c_str(), m_instance);
+		UnregisterClass(m_windowClassNameWide.c_str(), m_instance);
 		DestroyWindow(m_handle);
 	}
 }
@@ -121,8 +116,8 @@ bool RenderWindow::m_CreateWindowHandle(WindowContainer* pWindowContainer)
 {
 	m_handle = CreateWindowEx(
 		0,
-		m_windowClassNameWide->c_str(),
-		m_windowTitleWide->c_str(),
+		m_windowClassNameWide.c_str(),
+		m_windowTitleWide.c_str(),
 		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
 		0,
 		0,
@@ -135,7 +130,7 @@ bool RenderWindow::m_CreateWindowHandle(WindowContainer* pWindowContainer)
 
 	if (m_handle == nullptr)
 	{
-		errorlogger::Log(GetLastError(), "CreateWindowEx failed for window: " + *m_windowTitle);
+		errorlogger::Log(GetLastError(), "CreateWindowEx failed for window: " + m_windowTitle);
 		return false;
 	}
 
@@ -158,7 +153,7 @@ void RenderWindow::m_RegisterWindowClass()
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
-	wc.lpszClassName = m_windowClassNameWide->c_str();
+	wc.lpszClassName = m_windowClassNameWide.c_str();
 	wc.cbSize = sizeof(WNDCLASSEX);
 	RegisterClassEx(&wc);
 }
