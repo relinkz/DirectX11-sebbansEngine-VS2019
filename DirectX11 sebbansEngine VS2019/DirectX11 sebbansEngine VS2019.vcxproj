@@ -158,6 +158,7 @@
     <ClCompile Include="Mouse\Mouse.cpp" />
     <ClCompile Include="Mouse\MouseEvent.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
+    <ClCompile Include="Graphics\Shaders.cpp" />
     <ClCompile Include="WindowContainer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -165,13 +166,25 @@
     <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="Graphics\AdapterReader.h" />
     <ClInclude Include="Graphics\Graphics.h" />
+    <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Keyboard\Keyboard.h" />
     <ClInclude Include="Keyboard\KeyboardEvent.h" />
     <ClInclude Include="Mouse\Mouse.h" />
     <ClInclude Include="Mouse\MouseEvent.h" />
     <ClInclude Include="RenderWindow.h" />
+    <ClInclude Include="Graphics\Shaders.h" />
     <ClInclude Include="WindowContainer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Graphics\VertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,7 @@
 #pragma once
 #include "AdapterReader.h"
+#include "Shaders.h"
+#include <memory>
 
 class Graphics
 {
@@ -7,9 +9,10 @@ public:
 	bool Initialize(HWND hwnd, const int width, const int height);
 	void RenderFrame() const;
 private:
-	bool createSwapChain(HWND hwnd, const int width, const int height);
-	bool createRenderTargetViewWithSwapchain();
+	bool CreateSwapChain(HWND hwnd, const int width, const int height);
+	bool CreateRenderTargetViewWithSwapchain();
 	bool InitializeDirectX(HWND hwnd, const int width, const int height);
+	bool InitializeShaders();
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -19,4 +22,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapchain;
 	// A render-target-view interface identifies the render-target subresources that can be accessed during rendering.
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+	std::unique_ptr<VertexShader> m_vertexShader;
 };

@@ -2,7 +2,17 @@
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 {
-	return InitializeDirectX(hwnd, width, height);
+	if (!InitializeDirectX(hwnd, width, height))
+	{
+		return false;
+	}
+
+	if (!InitializeShaders())
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void Graphics::RenderFrame() const
@@ -12,7 +22,7 @@ void Graphics::RenderFrame() const
 	m_swapchain->Present(1, NULL);
 }
 
-bool Graphics::createSwapChain(HWND hwnd, const int width, const int height)
+bool Graphics::CreateSwapChain(HWND hwnd, const int width, const int height)
 {
 	std::vector<AdapterData> adapter = AdapterReader::GetAdapters();
 
@@ -68,7 +78,7 @@ bool Graphics::createSwapChain(HWND hwnd, const int width, const int height)
 	return true;
 }
 
-bool Graphics::createRenderTargetViewWithSwapchain()
+bool Graphics::CreateRenderTargetViewWithSwapchain()
 {
 	// get backbuffer as a 2D texture
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
@@ -91,18 +101,49 @@ bool Graphics::createRenderTargetViewWithSwapchain()
 
 bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 {
-	if (!createSwapChain(hwnd, width, height))
+	if (!CreateSwapChain(hwnd, width, height))
 	{
 		return false;
 	}
 
-	if (!createRenderTargetViewWithSwapchain())
+	if (!CreateRenderTargetViewWithSwapchain())
 	{
 		return false;
 	}
 
 	ID3D11DepthStencilView* dsv = NULL;
 	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), dsv);
+
+	return true;
+}
+
+bool Graphics::InitializeShaders()
+{
+	m_vertexShader = std::make_unique<VertexShader>();
+	std::wstring ShaderPath = m_vertexShader->GetShaderPath();
+
+	if (!m_vertexShader->Initialize(this->m_device, ShaderPath + L"VertexShader.cso"))
+	{
+		return false;
+	}
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	UINT numElements = ARRAYSIZE(layout);
+
+	HRESULT hr = m_device->CreateInputLayout(layout, numElements, 
+		m_vertexShader->GetBuffer()->GetBufferPointer(),
+		m_vertexShader->GetBuffer()->GetBufferSize(), 
+		m_inputLayout.GetAddressOf());
+	
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to create Input layout");
+		return false;
+	}
 
 	return true;
 }
