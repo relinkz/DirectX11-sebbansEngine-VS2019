@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include "ShaderFactory.h"
+#include "ResourceBufferFactory.h"
 #include "AdapterReader.h"
 
 
@@ -15,6 +16,11 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 		return false;
 	}
 
+	if (!InitializeScene())
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -22,6 +28,17 @@ void Graphics::RenderFrame() const
 {
 	float bgColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), bgColor);
+	m_deviceContext->IASetInputLayout(m_vertexShader->GetInputLayout());
+	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_deviceContext->VSSetShader(m_vertexShader->GetShader(), NULL, 0);
+	m_deviceContext->PSSetShader(m_pixelShader->GetShader(), NULL, 0);
+
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer->GetBufferAddress(), &stride, &offset);
+
+	m_deviceContext->Draw(m_vertexBuffer->GetNrOfVerticies(), 0);
+
 	m_swapchain->Present(1, NULL);
 }
 
@@ -147,5 +164,16 @@ bool Graphics::InitializeShaders()
 		return false;
 	}
 
+	return true;
+}
+
+bool Graphics::InitializeScene()
+{
+	ResourceBufferFactory resourceFactory = ResourceBufferFactory();
+	m_vertexBuffer = resourceFactory.CreatePointVertexBuffer(m_device);
+	if (!m_vertexBuffer)
+	{
+		return false;
+	}
 	return true;
 }

@@ -31,6 +31,18 @@
     <Filter Include="Source Files\Graphics">
       <UniqueIdentifier>{d8e2c3cc-344b-4d4a-971e-cef942d46a1e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Graphics\ResoureBuffers">
+      <UniqueIdentifier>{3b2529ae-8918-4c02-9d60-dc757dcd0ab1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Graphics\Shaders">
+      <UniqueIdentifier>{02a98b1b-9c6f-4b51-a89f-f92460f2b608}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\Shaders">
+      <UniqueIdentifier>{c6b9f359-b4ad-4052-92dc-ebfb9931275e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\ResourceBuffers">
+      <UniqueIdentifier>{5c12ece2-13d5-45db-a1c7-9935246e72f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -69,11 +81,17 @@
     <ClCompile Include="Graphics\AdapterReader.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\Shaders.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="Graphics\ShaderFactory.cpp">
-      <Filter>Source Files\Graphics</Filter>
+      <Filter>Source Files\Graphics\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Shaders.cpp">
+      <Filter>Source Files\Graphics\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ResourceBuffer.cpp">
+      <Filter>Source Files\Graphics\ResourceBuffers</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ResourceBufferFactory.cpp">
+      <Filter>Source Files\Graphics\ResourceBuffers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,14 +131,23 @@
     <ClInclude Include="Graphics\Vertex.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\Shaders.h">
-      <Filter>Header Files\Graphics</Filter>
+    <ClInclude Include="Graphics\IResourceBuffer.h">
+      <Filter>Header Files\Graphics\ResoureBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ResourceBuffer.h">
+      <Filter>Header Files\Graphics\ResoureBuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ResourceBufferFactory.h">
+      <Filter>Header Files\Graphics\ResoureBuffers</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\IShaders.h">
-      <Filter>Header Files\Graphics</Filter>
+      <Filter>Header Files\Graphics\Shaders</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\ShaderFactory.h">
-      <Filter>Header Files\Graphics</Filter>
+      <Filter>Header Files\Graphics\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Shaders.h">
+      <Filter>Header Files\Graphics\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -41,6 +41,7 @@ public:
 
 class IPixelShader : public IShader
 {
+public:
 	virtual bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::wstring shaderPath) = 0;
 	virtual ID3D11PixelShader* GetShader() = 0;
 };

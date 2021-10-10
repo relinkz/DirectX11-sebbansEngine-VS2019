@@ -151,6 +151,8 @@
     <ClCompile Include="ErrorLogger.cpp" />
     <ClCompile Include="Graphics\AdapterReader.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
+    <ClCompile Include="Graphics\ResourceBuffer.cpp" />
+    <ClCompile Include="Graphics\ResourceBufferFactory.cpp" />
     <ClCompile Include="Graphics\ShaderFactory.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="Keyboard\Keyboard.cpp" />
@@ -167,6 +169,9 @@
     <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="Graphics\AdapterReader.h" />
     <ClInclude Include="Graphics\Graphics.h" />
+    <ClInclude Include="Graphics\IResourceBuffer.h" />
+    <ClInclude Include="Graphics\ResourceBuffer.h" />
+    <ClInclude Include="Graphics\ResourceBufferFactory.h" />
     <ClInclude Include="Graphics\ShaderFactory.h" />
     <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="Helpers.h" />

@@ -1,5 +1,6 @@
 #pragma once
 #include "IShaders.h"
+#include "IResourceBuffer.h"
 #include <memory>
 
 class Graphics
@@ -12,6 +13,7 @@ private:
 	bool CreateRenderTargetViewWithSwapchain();
 	bool InitializeDirectX(HWND hwnd, const int width, const int height);
 	bool InitializeShaders();
+	bool InitializeScene();
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -21,7 +23,9 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapchain;
 	// A render-target-view interface identifies the render-target subresources that can be accessed during rendering.
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
 
 	std::unique_ptr<IVertexShader> m_vertexShader;
 	std::unique_ptr<IPixelShader> m_pixelShader;
+	std::unique_ptr<IResourceBuffer> m_vertexBuffer;
 };
