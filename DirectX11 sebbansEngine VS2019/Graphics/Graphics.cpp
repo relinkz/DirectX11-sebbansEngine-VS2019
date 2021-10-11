@@ -39,12 +39,19 @@ void Graphics::RenderFrame() const
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
 
+	// Update Constant buffer
+	CB_VS_vertexShader cData;
+	cData.xOffset = 0.0f;
+	cData.yOffset = 0.5f;
+	SetDynamicConstantBuffer(0, cData);
+
 	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
 	{
 		UINT offset = 0;
+		UINT stride = m_vertexBuffer.at(i)->GetStride();
 
 		m_deviceContext->PSSetShaderResources(0, 1, m_texture.GetAddressOf());
-		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), m_vertexBuffer.at(i)->GetStridePtr(), &offset);
+		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 		m_deviceContext->IASetIndexBuffer(m_indexBuffers.at(i)->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
 		
 		m_deviceContext->DrawIndexed(m_indexBuffers.at(i)->GetNrOfIndencies(), 0, 0);
@@ -96,6 +103,11 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 	}
 
 	if (!InitializeSamplerStates())
+	{
+		return false;
+	}
+
+	if (!InitializeConstantBuffers())
 	{
 		return false;
 	}
@@ -282,35 +294,6 @@ bool Graphics::InitializeScene()
 		0, 2, 3
 	};
 
-	//std::vector<Vertex> triangle =
-	//{
-	//	Vertex(), Vertex(), Vertex(),
-	//	Vertex(), Vertex(), Vertex()
-	//};
-	//triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot left
-	//triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 1.0f);  // Top left
-	//triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);	 // Top right
-	//
-	//triangle[0].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
-	//triangle[1].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
-	//triangle[2].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
-	//
-	//triangle[0].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
-	//triangle[1].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
-	//triangle[2].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
-
-	//triangle[3].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot left
-	//triangle[4].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);   // Top Right
-	//triangle[5].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 1.0f);	 // Bot Right
-
-	//triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
-	//triangle[4].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
-	//triangle[5].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
-
-	//triangle[3].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
-	//triangle[4].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
-	//triangle[5].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
-
 	auto triangleBuff = resourceFactory.CreateSimpleVertexBuffer(m_device, triangle);
 	if (!triangleBuff)
 	{
@@ -424,6 +407,43 @@ bool Graphics::InitializeTexture(const std::wstring& filePath)
 		errorlogger::Log(hr, "Failed to create Texture");
 		return false;
 	}
+
+	return false;
+}
+
+bool Graphics::InitializeConstantBuffers()
+{
+	auto resourceFactory = ResourceBufferFactory();
+
+	auto simpleConstantBuffer = resourceFactory.CreateSimpleConstantBuffer(m_device);
+	if (!simpleConstantBuffer)
+	{
+		return false;
+	}
+
+	m_constantBuffers.push_back(std::move(simpleConstantBuffer));
+
+	return true;
+}
+
+bool Graphics::SetDynamicConstantBuffer(const size_t index, CB_VS_vertexShader newData) const
+{
+	if (m_constantBuffers.size() < index)
+	{
+		errorlogger::Log("setDynamicConstantBuffer, index higher an vector size");
+		return false;
+	}
+
+	// Update Constant buffer
+	CB_VS_vertexShader cData;
+	cData.xOffset = 0.0f;
+	cData.yOffset = 0.5;
+
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	auto hr = m_deviceContext->Map(m_constantBuffers.at(index)->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	CopyMemory(mappedResource.pData, &cData, sizeof(CB_VS_vertexShader));
+	m_deviceContext->Unmap(m_constantBuffers.at(index)->GetBuffer(), index);
+	m_deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffers.at(index)->GetBufferAddress());
 
 	return false;
 }

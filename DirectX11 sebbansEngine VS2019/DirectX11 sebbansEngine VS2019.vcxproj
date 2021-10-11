@@ -165,6 +165,7 @@
     <ClCompile Include="WindowContainer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Graphics\BufferTypes.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="Graphics\AdapterReader.h" />
@@ -173,7 +174,6 @@
     <ClInclude Include="Graphics\ResourceBuffer.h" />
     <ClInclude Include="Graphics\ResourceBufferFactory.h" />
     <ClInclude Include="Graphics\ShaderFactory.h" />
-    <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Graphics\IShaders.h" />
     <ClInclude Include="Keyboard\Keyboard.h" />

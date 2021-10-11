@@ -24,6 +24,9 @@ private:
 	bool InitializeFonts();
 	bool InitializeSamplerStates();
 	bool InitializeTexture(const std::wstring& filePath);
+	bool InitializeConstantBuffers();
+
+	bool SetDynamicConstantBuffer(const size_t index, CB_VS_vertexShader newData) const;
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -51,4 +54,5 @@ private:
 	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
 	std::vector<std::unique_ptr<IResourceVertexBuffer>> m_vertexBuffer;
 	std::vector<std::unique_ptr<IResourceIndexBuffer>> m_indexBuffers;
+	std::vector<std::unique_ptr<IResourceConstantBuffer>> m_constantBuffers;
 };

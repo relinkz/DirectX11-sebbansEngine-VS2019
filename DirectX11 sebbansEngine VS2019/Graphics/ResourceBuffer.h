@@ -9,13 +9,12 @@ public:
 	UINT GetNrOfVerticies() const override;
 	ID3D11Buffer** GetBufferAddress() override;
 	const UINT GetStride() const override;
-	const UINT* GetStridePtr() const override;
 
 private:
 	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
 	UINT m_nrOfVerticies = 0;
-	std::unique_ptr<UINT> m_stride;
+	UINT m_stride;
 };
 
 class SimpleResourceIndexBuffer : public IResourceIndexBuffer
@@ -29,4 +28,15 @@ public:
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;
 	UINT m_nrOfIndencies = 0;
+};
+
+class SimpleResourceConstantBuffer : public IResourceConstantBuffer
+{
+public:
+	bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device) override;
+	ID3D11Buffer** GetBufferAddress() override;
+	ID3D11Buffer* GetBuffer() override;
+
+private:
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
 };

@@ -26,3 +26,16 @@ std::unique_ptr<IResourceIndexBuffer> ResourceBufferFactory::CreateSimpleIndexBu
 
 	return std::move(indexBuffer);
 }
+
+std::unique_ptr<IResourceConstantBuffer> ResourceBufferFactory::CreateSimpleConstantBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device)
+{
+	std::unique_ptr<SimpleResourceConstantBuffer> constantBuffer;
+	constantBuffer = std::make_unique<SimpleResourceConstantBuffer>();
+
+	if (!constantBuffer->Initialize(device))
+	{
+		return nullptr;
+	}
+
+	return std::move(constantBuffer);
+}

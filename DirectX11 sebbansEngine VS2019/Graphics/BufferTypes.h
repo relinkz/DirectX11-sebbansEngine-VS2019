@@ -9,3 +9,9 @@ struct Vertex
 	DirectX::XMFLOAT3 m_color;
 	DirectX::XMFLOAT2 m_texCoord;
 };
+
+struct CB_VS_vertexShader
+{
+	float xOffset = 0;
+	float yOffset = 0;
+};
