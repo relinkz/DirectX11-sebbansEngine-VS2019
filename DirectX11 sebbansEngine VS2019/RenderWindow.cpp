@@ -114,15 +114,25 @@ LRESULT CALLBACK HandleMessageSetup(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 bool RenderWindow::m_CreateWindowHandle(WindowContainer* pWindowContainer)
 {
+	const int centerScreenX = GetSystemMetrics(SM_CXSCREEN) / 2 - m_windowWidth / 2;
+	const int centerScreenY = GetSystemMetrics(SM_CYSCREEN) / 2 - m_windowHeight / 2;
+
+	RECT wr;
+	wr.left = centerScreenX;
+	wr.top = centerScreenY;
+	wr.right = wr.left + m_windowWidth;
+	wr.bottom = wr.top + m_windowHeight;
+	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
+
 	m_handle = CreateWindowEx(
 		0,
 		m_windowClassNameWide.c_str(),
 		m_windowTitleWide.c_str(),
 		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
-		0,
-		0,
-		m_windowWidth,
-		m_windowHeight,
+		wr.left,
+		wr.top,
+		wr.right - wr.left,
+		wr.bottom - wr.top,
 		nullptr,
 		nullptr,
 		m_instance,
