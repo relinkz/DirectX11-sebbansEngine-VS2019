@@ -1,7 +1,7 @@
 #include "ResourceBuffer.h"
 #include "../ErrorLogger.h"
 
-bool SimpleTriangleVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<Vertex> vData)
+bool SimpleResourceVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<Vertex> vData)
 {
 	m_nrOfVerticies = static_cast<UINT>(vData.size());
 
@@ -28,12 +28,12 @@ bool SimpleTriangleVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>
 	return true;
 }
 
-UINT SimpleTriangleVertexBuffer::GetNrOfVerticies() const
+UINT SimpleResourceVertexBuffer::GetNrOfVerticies() const
 {
 	return m_nrOfVerticies;
 }
 
-ID3D11Buffer** SimpleTriangleVertexBuffer::GetBufferAddress()
+ID3D11Buffer** SimpleResourceVertexBuffer::GetBufferAddress()
 {
 	return m_vertexBuffer.GetAddressOf();
 }

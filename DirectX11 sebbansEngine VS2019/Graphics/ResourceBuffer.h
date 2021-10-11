@@ -1,7 +1,7 @@
 #pragma once
 #include "IResourceBuffer.h"
 
-class SimpleTriangleVertexBuffer : public IResourceBuffer
+class SimpleResourceVertexBuffer : public IResourceVertexBuffer
 {
 public:
 	bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<Vertex> vData) override;

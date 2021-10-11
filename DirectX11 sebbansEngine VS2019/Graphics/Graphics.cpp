@@ -311,7 +311,7 @@ bool Graphics::InitializeScene()
 	//triangle[4].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
 	//triangle[5].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
 
-	auto triangleBuff = resourceFactory.CreateSimpleTriangleVertexBuffer(m_device, triangle);
+	auto triangleBuff = resourceFactory.CreateSimpleVertexBuffer(m_device, triangle);
 	if (!triangleBuff)
 	{
 		return false;
