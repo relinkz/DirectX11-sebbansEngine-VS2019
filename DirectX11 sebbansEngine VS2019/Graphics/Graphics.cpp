@@ -43,7 +43,7 @@ void Graphics::RenderFrame() const
 
 	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
 	{
-		m_deviceContext->PSSetShaderResources(0, 1, m_myTexture.GetAddressOf());
+		m_deviceContext->PSSetShaderResources(0, 1, m_texture.GetAddressOf());
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 		m_deviceContext->IASetIndexBuffer(m_indexBuffers.at(i)->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
 		
@@ -58,7 +58,52 @@ void Graphics::RenderFrame() const
 	m_swapchain->Present(1, NULL);
 }
 
-bool Graphics::CreateSwapChain(HWND hwnd, const int width, const int height)
+bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
+{
+	if (!InitializeSwapChain(hwnd, width, height))
+	{
+		return false;
+	}
+
+	if (!InitializeRenderTargetViewWithSwapchain())
+	{
+		return false;
+	}
+
+	if (!InitializeDepthStencil(width, height))
+	{
+		return false;
+	}
+
+	if (!InitializeDepthStencilState())
+	{
+		return false;
+	}
+
+	if (!InitializeViewport(width, height))
+	{
+		return false;
+	}
+
+	if (!InitializeRasterizer())
+	{
+		return false;
+	}
+
+	if (!InitializeFonts())
+	{
+		return false;
+	}
+
+	if (!InitializeSamplerStates())
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool Graphics::InitializeSwapChain(HWND hwnd, const int width, const int height)
 {
 	std::vector<AdapterData> adapter = AdapterReader::GetAdapters();
 
@@ -114,7 +159,7 @@ bool Graphics::CreateSwapChain(HWND hwnd, const int width, const int height)
 	return true;
 }
 
-bool Graphics::CreateRenderTargetViewWithSwapchain()
+bool Graphics::InitializeRenderTargetViewWithSwapchain()
 {
 	// get backbuffer as a 2D texture
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
@@ -135,7 +180,7 @@ bool Graphics::CreateRenderTargetViewWithSwapchain()
 	return true;
 }
 
-bool Graphics::CreateDepthStencil(const int width, const int height)
+bool Graphics::InitializeDepthStencil(const int width, const int height)
 {
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
 	depthStencilDesc.Width = width;
@@ -170,7 +215,7 @@ bool Graphics::CreateDepthStencil(const int width, const int height)
 	return true;
 }
 
-bool Graphics::CreateDepthStencilState()
+bool Graphics::InitializeDepthStencilState()
 {
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	ZeroMemory(&depthStencilDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
@@ -183,51 +228,6 @@ bool Graphics::CreateDepthStencilState()
 	if (FAILED(hr))
 	{
 		errorlogger::Log(hr, "Failed to create depth stencil view");
-		return false;
-	}
-
-	return true;
-}
-
-bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
-{
-	if (!CreateSwapChain(hwnd, width, height))
-	{
-		return false;
-	}
-
-	if (!CreateRenderTargetViewWithSwapchain())
-	{
-		return false;
-	}
-
-	if (!CreateDepthStencil(width, height))
-	{
-		return false;
-	}
-
-	if (!CreateDepthStencilState())
-	{
-		return false;
-	}
-
-	if (!InitializeViewport(width, height))
-	{
-		return false;
-	}
-
-	if (!InitializeRasterizer())
-	{
-		return false;
-	}
-
-	if (!InitializeFonts())
-	{
-		return false;
-	}
-
-	if (!InitializeSamplerStates())
-	{
 		return false;
 	}
 
@@ -418,7 +418,7 @@ bool Graphics::InitializeTexture(const std::wstring& filePath)
 	/*
 	* need CoInitialize to be called before working, spritefont might be the one calling according to internet.
 	*/
-	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), filePath.c_str(), nullptr, m_myTexture.GetAddressOf());
+	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), filePath.c_str(), nullptr, m_texture.GetAddressOf());
 	if (FAILED(hr))
 	{
 		errorlogger::Log(hr, "Failed to create Texture");

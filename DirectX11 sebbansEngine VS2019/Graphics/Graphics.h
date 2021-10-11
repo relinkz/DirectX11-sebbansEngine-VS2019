@@ -12,11 +12,11 @@ public:
 	bool Initialize(HWND hwnd, const int width, const int height);
 	void RenderFrame() const;
 private:
-	bool CreateSwapChain(HWND hwnd, const int width, const int height);
-	bool CreateRenderTargetViewWithSwapchain();
-	bool CreateDepthStencil(const int width, const int height);
-	bool CreateDepthStencilState();
 	bool InitializeDirectX(HWND hwnd, const int width, const int height);
+	bool InitializeSwapChain(HWND hwnd, const int width, const int height);
+	bool InitializeRenderTargetViewWithSwapchain();
+	bool InitializeDepthStencil(const int width, const int height);
+	bool InitializeDepthStencilState();
 	bool InitializeShaders();
 	bool InitializeScene();
 	bool InitializeViewport(const int width, const int height);
@@ -37,7 +37,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;
 	// The sampler-state interface holds a description for sampler state that you can bind to any shader stage of the pipeline for reference by texture sample operations.
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_myTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilTexture;
