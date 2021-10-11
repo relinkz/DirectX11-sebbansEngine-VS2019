@@ -13,3 +13,16 @@ std::unique_ptr<IResourceBuffer> ResourceBufferFactory::CreateSimpleTriangleVert
 
 	return std::move(vertexBuffer);
 }
+
+std::unique_ptr<IResourceIndexBuffer> ResourceBufferFactory::CreateSimpleIndexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<DWORD> iData)
+{
+	std::unique_ptr<SimpleResourceIndexBuffer> indexBuffer;
+	indexBuffer = std::make_unique<SimpleResourceIndexBuffer>();
+
+	if (!indexBuffer->Initialize(device, iData))
+	{
+		return nullptr;
+	}
+
+	return std::move(indexBuffer);
+}

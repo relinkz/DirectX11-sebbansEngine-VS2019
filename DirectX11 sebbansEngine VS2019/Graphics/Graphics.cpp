@@ -45,7 +45,9 @@ void Graphics::RenderFrame() const
 	{
 		m_deviceContext->PSSetShaderResources(0, 1, m_myTexture.GetAddressOf());
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
-		m_deviceContext->Draw(m_vertexBuffer.at(i)->GetNrOfVerticies(), 0);
+		m_deviceContext->IASetIndexBuffer(m_indexBuffers.at(i)->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		
+		m_deviceContext->DrawIndexed(m_indexBuffers.at(i)->GetNrOfIndencies(), 0, 0);
 	}
 
 	// Draw text
@@ -255,33 +257,59 @@ bool Graphics::InitializeScene()
 	ResourceBufferFactory resourceFactory = ResourceBufferFactory();
 	std::vector<Vertex> triangle = 
 	{ 
-		Vertex(), Vertex(), Vertex(),
-		Vertex(), Vertex(), Vertex()
+		Vertex(), Vertex(), Vertex(), Vertex()
 	};
 
-	triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot left
-	triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 1.0f);  // Top left
-	triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);	 // Top right
-	
+	triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot Left
 	triangle[0].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
-	triangle[1].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
-	triangle[2].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
-	
 	triangle[0].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+
+	triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 1.0f); // Top Left
+	triangle[1].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
 	triangle[1].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+
+	triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f); // Top Right
+	triangle[2].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
 	triangle[2].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
 
-	triangle[3].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot left
-	triangle[4].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);   // Top Right
-	triangle[5].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 1.0f);	 // Bot Right
+	triangle[3].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 1.0f); // Bot Right
+	triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	triangle[3].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
 
-	triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
-	triangle[4].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
-	triangle[5].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
+	std::vector<DWORD> indices =
+	{
+		0, 1, 2,
+		0, 2, 3
+	};
 
-	triangle[3].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
-	triangle[4].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
-	triangle[5].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
+	//std::vector<Vertex> triangle =
+	//{
+	//	Vertex(), Vertex(), Vertex(),
+	//	Vertex(), Vertex(), Vertex()
+	//};
+	//triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot left
+	//triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 1.0f);  // Top left
+	//triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);	 // Top right
+	//
+	//triangle[0].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
+	//triangle[1].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	//triangle[2].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
+	//
+	//triangle[0].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+	//triangle[1].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+	//triangle[2].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
+
+	//triangle[3].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot left
+	//triangle[4].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);   // Top Right
+	//triangle[5].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 1.0f);	 // Bot Right
+
+	//triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
+	//triangle[4].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	//triangle[5].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
+
+	//triangle[3].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+	//triangle[4].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
+	//triangle[5].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
 
 	auto triangleBuff = resourceFactory.CreateSimpleTriangleVertexBuffer(m_device, triangle);
 	if (!triangleBuff)
@@ -289,7 +317,14 @@ bool Graphics::InitializeScene()
 		return false;
 	}
 
+	auto triIndBuff = resourceFactory.CreateSimpleIndexBuffer(m_device, indices);
+	if (!triIndBuff)
+	{
+		return false;
+	}
+
 	m_vertexBuffer.push_back(std::move(triangleBuff));
+	m_indexBuffers.push_back(std::move(triIndBuff));
 
 	std::wstring pathToFile = L"Data\\Textures\\YaoMingMeme.jpg";
 	if (InitializeTexture(pathToFile))

@@ -50,4 +50,5 @@ private:
 
 	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
 	std::vector<std::unique_ptr<IResourceBuffer>> m_vertexBuffer;
+	std::vector<std::unique_ptr<IResourceIndexBuffer>> m_indexBuffers;
 };
