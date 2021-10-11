@@ -10,6 +10,8 @@ public:
 	virtual bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<Vertex> vData) = 0;
 	virtual UINT GetNrOfVerticies() const = 0;
 	virtual ID3D11Buffer** GetBufferAddress() = 0;
+	virtual const UINT GetStride() const = 0;
+	virtual const UINT* GetStridePtr() const = 0;
 };
 
 class IResourceIndexBuffer

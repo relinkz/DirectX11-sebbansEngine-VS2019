@@ -4,6 +4,7 @@
 bool SimpleResourceVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<Vertex> vData)
 {
 	m_nrOfVerticies = static_cast<UINT>(vData.size());
+	m_stride = std::make_unique<UINT>(sizeof(Vertex));
 
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
@@ -36,6 +37,16 @@ UINT SimpleResourceVertexBuffer::GetNrOfVerticies() const
 ID3D11Buffer** SimpleResourceVertexBuffer::GetBufferAddress()
 {
 	return m_vertexBuffer.GetAddressOf();
+}
+
+const UINT SimpleResourceVertexBuffer::GetStride() const
+{
+	return *m_stride.get();
+}
+
+const UINT* SimpleResourceVertexBuffer::GetStridePtr() const
+{
+	return m_stride.get();
 }
 
 bool SimpleResourceIndexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::vector<DWORD> iData)

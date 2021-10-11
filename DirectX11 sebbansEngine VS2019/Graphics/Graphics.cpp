@@ -38,13 +38,13 @@ void Graphics::RenderFrame() const
 	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
 
 	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
 	{
+		UINT offset = 0;
+
 		m_deviceContext->PSSetShaderResources(0, 1, m_texture.GetAddressOf());
-		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
+		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), m_vertexBuffer.at(i)->GetStridePtr(), &offset);
 		m_deviceContext->IASetIndexBuffer(m_indexBuffers.at(i)->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
 		
 		m_deviceContext->DrawIndexed(m_indexBuffers.at(i)->GetNrOfIndencies(), 0, 0);
