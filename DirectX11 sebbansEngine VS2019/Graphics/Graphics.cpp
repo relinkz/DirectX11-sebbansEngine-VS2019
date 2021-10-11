@@ -35,6 +35,7 @@ void Graphics::RenderFrame() const
 	m_deviceContext->VSSetShader(m_vertexShader->GetShader(), NULL, 0);
 	m_deviceContext->RSSetState(m_rasterizerState.Get());
 	m_deviceContext->PSSetShader(m_pixelShader->GetShader(), NULL, 0);
+	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
 	UINT stride = sizeof(Vertex);
@@ -42,6 +43,7 @@ void Graphics::RenderFrame() const
 
 	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
 	{
+		m_deviceContext->PSSetShaderResources(0, 1, m_myTexture.GetAddressOf());
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 		m_deviceContext->Draw(m_vertexBuffer.at(i)->GetNrOfVerticies(), 0);
 	}
@@ -160,6 +162,9 @@ bool Graphics::CreateDepthStencil(const int width, const int height)
 		return false;
 	}
 
+	// assign depthStencil to output merger
+	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+
 	return true;
 }
 
@@ -199,41 +204,27 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 		return false;
 	}
 
-	// output merger
-	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-
 	if (!CreateDepthStencilState())
 	{
 		return false;
 	}
 
-	D3D11_VIEWPORT viewport;
-	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
-
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = static_cast<FLOAT>(width);
-	viewport.Height = static_cast<FLOAT>(height);
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	// rasterizer
-	m_deviceContext->RSSetViewports(1, &viewport);
-
-	D3D11_RASTERIZER_DESC rasterizerDesc;
-	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
-
-	rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-	rasterizerDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
-
-	auto hr = m_device->CreateRasterizerState(&rasterizerDesc, m_rasterizerState.GetAddressOf());
-	if (FAILED(hr))
+	if (!InitializeViewport(width, height))
 	{
-		errorlogger::Log(hr, "Failed to create rasterizer state");
+		return false;
+	}
+
+	if (!InitializeRasterizer())
+	{
 		return false;
 	}
 
 	if (!InitializeFonts())
+	{
+		return false;
+	}
+
+	if (!InitializeSamplerStates())
 	{
 		return false;
 	}
@@ -262,51 +253,85 @@ bool Graphics::InitializeShaders()
 bool Graphics::InitializeScene()
 {
 	ResourceBufferFactory resourceFactory = ResourceBufferFactory();
-
-	// clock wise
-	std::vector<Vertex> redTriangle
-	{
-		// depth set in Vertex
-		Vertex(-0.6f, -0.6f, 1.0f, 0.0f, 0.0f), // Bot left Point
-		Vertex(0.0f, 0.6f, 1.0f, 0.0f, 0.0f), // Top mid Point
-		Vertex(0.6f, -0.6f, 1.0f, 0.0f, 0.0f), // Right Point
+	std::vector<Vertex> triangle = 
+	{ 
+		Vertex(), Vertex(), Vertex(),
+		Vertex(), Vertex(), Vertex()
 	};
 
-	auto redTriangleBuff = resourceFactory.CreateSimpleTriangleVertexBuffer(m_device, redTriangle);
-	if (!redTriangleBuff)
+	triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot left
+	triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 1.0f);  // Top left
+	triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);	 // Top right
+	
+	triangle[0].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
+	triangle[1].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	triangle[2].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
+	
+	triangle[0].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+	triangle[1].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+	triangle[2].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
+
+	triangle[3].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot left
+	triangle[4].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);   // Top Right
+	triangle[5].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 1.0f);	 // Bot Right
+
+	triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
+	triangle[4].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	triangle[5].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
+
+	triangle[3].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+	triangle[4].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
+	triangle[5].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
+
+	auto triangleBuff = resourceFactory.CreateSimpleTriangleVertexBuffer(m_device, triangle);
+	if (!triangleBuff)
 	{
 		return false;
 	}
 
-	std::vector<Vertex> blueTriangle
-	{
-		Vertex(-0.3f, -0.3f, 0.5f, 0.0f, 0.0f, 1.0f), // Bot left Point
-		Vertex(0.0f, 0.3f, 0.5f, 0.0f, 0.0f, 1.0f), // Top mid Point
-		Vertex(0.3f, -0.3f, 0.5f, 0.0f, 0.0f, 1.0f), // Right Point
-	};
+	m_vertexBuffer.push_back(std::move(triangleBuff));
 
-	auto blueTriangleBuff = resourceFactory.CreateSimpleTriangleVertexBuffer(m_device, blueTriangle);
-	if (!blueTriangleBuff)
+	std::wstring pathToFile = L"Data\\Textures\\YaoMingMeme.jpg";
+	if (InitializeTexture(pathToFile))
 	{
 		return false;
 	}
 
-	std::vector<Vertex> greenTriangle
-	{
-		Vertex(-0.1f, -0.1f, 0.3f, 0.0f, 1.0f, 0.0f), // Bot left Point
-		Vertex(0.0f, 0.1f, 0.3f, 0.0f, 1.0f, 0.0f), // Top mid Point
-		Vertex(0.1f, -0.1f, 0.3f, 0.0f, 1.0f, 0.0f), // Right Point
-	};
+	return true;
+}
 
-	auto greenTriangleBuff = resourceFactory.CreateSimpleTriangleVertexBuffer(m_device, greenTriangle);
-	if (!greenTriangleBuff)
+bool Graphics::InitializeViewport(const int width, const int height)
+{
+	D3D11_VIEWPORT viewport;
+	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = static_cast<FLOAT>(width);
+	viewport.Height = static_cast<FLOAT>(height);
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	// rasterizer
+	m_deviceContext->RSSetViewports(1, &viewport);
+
+	return true;
+}
+
+bool Graphics::InitializeRasterizer()
+{
+	D3D11_RASTERIZER_DESC rasterizerDesc;
+	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
+
+	rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
+	rasterizerDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
+
+	auto hr = m_device->CreateRasterizerState(&rasterizerDesc, m_rasterizerState.GetAddressOf());
+	if (FAILED(hr))
 	{
+		errorlogger::Log(hr, "Failed to create rasterizer state");
 		return false;
 	}
-
-	m_vertexBuffer.push_back(std::move(blueTriangleBuff));
-	m_vertexBuffer.push_back(std::move(redTriangleBuff));
-	m_vertexBuffer.push_back(std::move(greenTriangleBuff));
 
 	return true;
 }
@@ -328,4 +353,42 @@ bool Graphics::InitializeFonts()
 	}
 
 	return true;
+}
+
+bool Graphics::InitializeSamplerStates()
+{
+	D3D11_SAMPLER_DESC sampleDesc;
+	ZeroMemory(&sampleDesc, sizeof(sampleDesc));
+
+	sampleDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampleDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampleDesc.MinLOD = 0;
+	sampleDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	auto hr = m_device->CreateSamplerState(&sampleDesc, m_samplerState.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to create sampler state");
+		return false;
+	}
+
+	return true;
+}
+
+bool Graphics::InitializeTexture(const std::wstring& filePath)
+{
+	/*
+	* need CoInitialize to be called before working, spritefont might be the one calling according to internet.
+	*/
+	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), filePath.c_str(), nullptr, m_myTexture.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to create Texture");
+		return false;
+	}
+
+	return false;
 }
