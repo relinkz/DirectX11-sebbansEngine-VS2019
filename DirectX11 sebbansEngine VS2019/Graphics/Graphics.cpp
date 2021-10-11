@@ -46,6 +46,11 @@ void Graphics::RenderFrame() const
 		m_deviceContext->Draw(m_vertexBuffer.at(i)->GetNrOfVerticies(), 0);
 	}
 
+	// Draw text
+	m_spriteBatch->Begin();
+	m_spriteFont->DrawString(m_spriteBatch.get(), L"Hello World", DirectX::XMFLOAT2(0,0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f,1.0f));
+	m_spriteBatch->End();
+
 	m_swapchain->Present(1, NULL);
 }
 
@@ -228,6 +233,11 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 		return false;
 	}
 
+	if (!InitializeFonts())
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -297,6 +307,25 @@ bool Graphics::InitializeScene()
 	m_vertexBuffer.push_back(std::move(blueTriangleBuff));
 	m_vertexBuffer.push_back(std::move(redTriangleBuff));
 	m_vertexBuffer.push_back(std::move(greenTriangleBuff));
+
+	return true;
+}
+
+bool Graphics::InitializeFonts()
+{
+	m_spriteBatch = std::make_unique<DirectX::SpriteBatch>(m_deviceContext.Get());
+	if (!m_spriteBatch)
+	{
+		errorlogger::Log("Failed to create SpriteBatch");
+		return false;
+	}
+
+	m_spriteFont = std::make_unique<DirectX::SpriteFont>(m_device.Get(), L"Data\\Fonts\\comic_sans_ms_16.spritefont");
+	if (!m_spriteFont)
+	{
+		errorlogger::Log("Failed to create SpriteFont: Path not found");
+		return false;
+	}
 
 	return true;
 }

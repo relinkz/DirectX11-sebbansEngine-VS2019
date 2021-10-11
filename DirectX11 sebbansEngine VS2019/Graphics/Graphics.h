@@ -2,6 +2,8 @@
 #include "IShaders.h"
 #include "IResourceBuffer.h"
 #include <memory>
+#include <SpriteBatch.h>
+#include <SpriteFont.h>
 
 class Graphics
 {
@@ -16,6 +18,7 @@ private:
 	bool InitializeDirectX(HWND hwnd, const int width, const int height);
 	bool InitializeShaders();
 	bool InitializeScene();
+	bool InitializeFonts();
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -34,6 +37,8 @@ private:
 
 	std::unique_ptr<IVertexShader> m_vertexShader;
 	std::unique_ptr<IPixelShader> m_pixelShader;
+	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
+	std::unique_ptr<DirectX::SpriteFont> m_spriteFont;
 	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
 	std::vector<std::unique_ptr<IResourceBuffer>> m_vertexBuffer;
 };
