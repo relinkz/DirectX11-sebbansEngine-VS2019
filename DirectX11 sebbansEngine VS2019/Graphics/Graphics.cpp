@@ -41,11 +41,28 @@ void Graphics::RenderFrame() const
 	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
+	DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity();
+
+	static DirectX::XMVECTOR eyePos = DirectX::XMVectorSet(0.0f, -4.0f, -2.0f, 0.0f);
+	DirectX::XMFLOAT3 eyePosFloat3;
+	DirectX::XMStoreFloat3(&eyePosFloat3, eyePos);
+	eyePosFloat3.y += 0.01;
+	eyePos = DirectX::XMLoadFloat3(&eyePosFloat3);
+
+	static DirectX::XMVECTOR lookAtPos = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	static DirectX::XMVECTOR upVector = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixLookAtLH(eyePos, lookAtPos, upVector);
+
+	float fovDegrees = 90.0f;
+	float fovRadians = (fovDegrees / 360.0f) * DirectX::XM_2PI;
+	float aspectRatio = static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight);
+	float nearZ = 0.1f;
+	float farZ = 1000.0f;
+	DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(fovRadians, aspectRatio, nearZ, farZ);
+
 	// Model to world matrix
 	CB_VS_vertexShader cData;
-	cData.m_matrix = DirectX::XMMatrixRotationRollPitchYaw(0.0f, 0.0f, DirectX::XM_PIDIV2);
-	cData.m_matrix *= DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
-	cData.m_matrix *= DirectX::XMMatrixTranslation(0.0f, -0.5f, 0.0f);
+	cData.m_matrix = worldMatrix * viewMatrix * projectionMatrix;
 	
 	// In pipeline matrises are swapped due to performance reasons
 	// transpose->swapping the x y axis of the matrix RowMajor -> columnMajor format
@@ -280,19 +297,19 @@ bool Graphics::InitializeScene()
 		Vertex(), Vertex(), Vertex(), Vertex()
 	};
 
-	triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f); // Bot Left
+	triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f); // Bot Left
 	triangle[0].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
 	triangle[0].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
 
-	triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 1.0f); // Top Left
+	triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f); // Top Left
 	triangle[1].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
 	triangle[1].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
 
-	triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f); // Top Right
+	triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f); // Top Right
 	triangle[2].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
 	triangle[2].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
 
-	triangle[3].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 1.0f); // Bot Right
+	triangle[3].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f); // Bot Right
 	triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
 	triangle[3].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
 
