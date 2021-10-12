@@ -12,14 +12,14 @@ public:
 	bool Initialize(HWND hwnd, const int width, const int height);
 	void RenderFrame() const;
 private:
-	bool InitializeDirectX(HWND hwnd, const int width, const int height);
-	bool InitializeSwapChain(HWND hwnd, const int width, const int height);
+	bool InitializeDirectX(HWND hwnd);
+	bool InitializeSwapChain(HWND hwnd);
 	bool InitializeRenderTargetViewWithSwapchain();
-	bool InitializeDepthStencil(const int width, const int height);
+	bool InitializeDepthStencil();
 	bool InitializeDepthStencilState();
 	bool InitializeShaders();
 	bool InitializeScene();
-	bool InitializeViewport(const int width, const int height);
+	bool InitializeViewport();
 	bool InitializeRasterizer();
 	bool InitializeFonts();
 	bool InitializeSamplerStates();
@@ -55,4 +55,7 @@ private:
 	std::vector<std::unique_ptr<IResourceVertexBuffer>> m_vertexBuffer;
 	std::vector<std::unique_ptr<IResourceIndexBuffer>> m_indexBuffers;
 	std::vector<std::unique_ptr<IResourceConstantBuffer>> m_constantBuffers;
+
+	int m_windowWidth = 0;
+	int m_windowHeight = 0;
 };

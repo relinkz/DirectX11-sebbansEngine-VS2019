@@ -6,7 +6,10 @@
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 {
-	if (!InitializeDirectX(hwnd, width, height))
+	m_windowWidth = width;
+	m_windowHeight = height;
+
+	if (!InitializeDirectX(hwnd))
 	{
 		return false;
 	}
@@ -70,9 +73,9 @@ void Graphics::RenderFrame() const
 	m_swapchain->Present(1, NULL);
 }
 
-bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
+bool Graphics::InitializeDirectX(HWND hwnd)
 {
-	if (!InitializeSwapChain(hwnd, width, height))
+	if (!InitializeSwapChain(hwnd))
 	{
 		return false;
 	}
@@ -82,7 +85,7 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 		return false;
 	}
 
-	if (!InitializeDepthStencil(width, height))
+	if (!InitializeDepthStencil())
 	{
 		return false;
 	}
@@ -92,7 +95,7 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 		return false;
 	}
 
-	if (!InitializeViewport(width, height))
+	if (!InitializeViewport())
 	{
 		return false;
 	}
@@ -120,7 +123,7 @@ bool Graphics::InitializeDirectX(HWND hwnd, const int width, const int height)
 	return true;
 }
 
-bool Graphics::InitializeSwapChain(HWND hwnd, const int width, const int height)
+bool Graphics::InitializeSwapChain(HWND hwnd)
 {
 	std::vector<AdapterData> adapter = AdapterReader::GetAdapters();
 
@@ -132,8 +135,8 @@ bool Graphics::InitializeSwapChain(HWND hwnd, const int width, const int height)
 
 	DXGI_SWAP_CHAIN_DESC scd;
 	ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
-	scd.BufferDesc.Width = width;
-	scd.BufferDesc.Height = height;
+	scd.BufferDesc.Width = m_windowWidth;
+	scd.BufferDesc.Height = m_windowHeight;
 	scd.BufferDesc.RefreshRate.Numerator = 60; // Is only used on fullscreen
 	scd.BufferDesc.RefreshRate.Denominator = 1;
 	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -197,11 +200,11 @@ bool Graphics::InitializeRenderTargetViewWithSwapchain()
 	return true;
 }
 
-bool Graphics::InitializeDepthStencil(const int width, const int height)
+bool Graphics::InitializeDepthStencil()
 {
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
-	depthStencilDesc.Width = width;
-	depthStencilDesc.Height = height;
+	depthStencilDesc.Width = m_windowWidth;
+	depthStencilDesc.Height = m_windowHeight;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -323,15 +326,15 @@ bool Graphics::InitializeScene()
 	return true;
 }
 
-bool Graphics::InitializeViewport(const int width, const int height)
+bool Graphics::InitializeViewport()
 {
 	D3D11_VIEWPORT viewport;
 	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = static_cast<FLOAT>(width);
-	viewport.Height = static_cast<FLOAT>(height);
+	viewport.Width = static_cast<FLOAT>(m_windowWidth);
+	viewport.Height = static_cast<FLOAT>(m_windowHeight);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 
