@@ -26,7 +26,7 @@ private:
 	bool InitializeTexture(const std::wstring& filePath);
 	bool InitializeConstantBuffers();
 
-	bool SetDynamicConstantBuffer(const size_t index, CB_VS_vertexShader newData) const;
+	bool UpdateDynamicConstantBuffer(const size_t index, CB_VS_vertexShader newData) const;
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;

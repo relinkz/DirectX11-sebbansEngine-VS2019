@@ -38,12 +38,17 @@ void Graphics::RenderFrame() const
 	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
-
-	// Update Constant buffer
+	// Model to world matrix
 	CB_VS_vertexShader cData;
-	cData.xOffset = 0.0f;
-	cData.yOffset = 0.5f;
-	SetDynamicConstantBuffer(0, cData);
+	cData.m_matrix = DirectX::XMMatrixRotationRollPitchYaw(0.0f, 0.0f, DirectX::XM_PIDIV2);
+	cData.m_matrix *= DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	cData.m_matrix *= DirectX::XMMatrixTranslation(0.0f, -0.5f, 0.0f);
+	
+	// In pipeline matrises are swapped due to performance reasons
+	// transpose->swapping the x y axis of the matrix RowMajor -> columnMajor format
+	cData.m_matrix = DirectX::XMMatrixTranspose(cData.m_matrix); 
+
+	UpdateDynamicConstantBuffer(0, cData);
 
 	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
 	{
@@ -426,7 +431,7 @@ bool Graphics::InitializeConstantBuffers()
 	return true;
 }
 
-bool Graphics::SetDynamicConstantBuffer(const size_t index, CB_VS_vertexShader newData) const
+bool Graphics::UpdateDynamicConstantBuffer(const size_t index, CB_VS_vertexShader newData) const
 {
 	if (m_constantBuffers.size() < index)
 	{
@@ -434,14 +439,9 @@ bool Graphics::SetDynamicConstantBuffer(const size_t index, CB_VS_vertexShader n
 		return false;
 	}
 
-	// Update Constant buffer
-	CB_VS_vertexShader cData;
-	cData.xOffset = 0.0f;
-	cData.yOffset = 0.5;
-
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	auto hr = m_deviceContext->Map(m_constantBuffers.at(index)->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	CopyMemory(mappedResource.pData, &cData, sizeof(CB_VS_vertexShader));
+	CopyMemory(mappedResource.pData, &newData, sizeof(CB_VS_vertexShader));
 	m_deviceContext->Unmap(m_constantBuffers.at(index)->GetBuffer(), index);
 	m_deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffers.at(index)->GetBufferAddress());
 

@@ -14,18 +14,14 @@ struct VS_OUTPUT
 
 cbuffer myCBuff : register(b0)
 {
-	float xOffset;
-	float yOffset;
+	float4x4 mat;
 };
 
 VS_OUTPUT main(VS_INPUT input)
 {
 	VS_OUTPUT output;
 	
-	input.inPos.x += xOffset;
-	input.inPos.y += yOffset;
-	
-	output.outPosition = float4(input.inPos, 1.0f);
+	output.outPosition = mul(float4(input.inPos, 1.0f), mat);
 	output.outColor = input.inColor;
 	output.outTexCoord = input.inTexCoord;
 	

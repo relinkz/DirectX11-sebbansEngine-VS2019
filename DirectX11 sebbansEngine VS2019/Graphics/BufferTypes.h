@@ -12,6 +12,5 @@ struct Vertex
 
 struct CB_VS_vertexShader
 {
-	float xOffset = 0;
-	float yOffset = 0;
+	DirectX::XMMATRIX m_matrix;
 };
