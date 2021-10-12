@@ -93,6 +93,9 @@
     <ClCompile Include="Graphics\ResourceBufferFactory.cpp">
       <Filter>Source Files\Graphics\ResourceBuffers</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Camera.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Helpers.h">
@@ -147,6 +150,9 @@
       <Filter>Header Files\Graphics\Shaders</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\BufferTypes.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Camera.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
   </ItemGroup>

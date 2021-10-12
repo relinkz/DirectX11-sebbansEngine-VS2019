@@ -1,6 +1,8 @@
 #pragma once
 #include "IShaders.h"
 #include "IResourceBuffer.h"
+#include "Camera.h"
+
 #include <memory>
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
@@ -58,4 +60,6 @@ private:
 
 	int m_windowWidth = 0;
 	int m_windowHeight = 0;
+
+	std::unique_ptr<Camera> m_camera;
 };
