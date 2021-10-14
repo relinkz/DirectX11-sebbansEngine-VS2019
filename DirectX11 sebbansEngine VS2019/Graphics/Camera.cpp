@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "GraphicsTools.h"
 
 using namespace DirectX;
 
@@ -108,6 +109,42 @@ void Camera::AdjustRotation(const float x, const float y, const float z)
 
 	m_rotVector = XMLoadFloat3(&m_rot);
 	UpdateViewMatrix();
+}
+
+void Camera::SetLookAtPos(DirectX::XMFLOAT3 lookAtPos)
+{
+	bool sameAsCamPos = lookAtPos.x == m_pos.x && lookAtPos.y == m_pos.y && lookAtPos.z == m_pos.z;
+	if (sameAsCamPos)
+	{
+		return;
+	}
+
+	XMFLOAT3 dirVector = GraphicsTools::SubtractFloat3(m_pos, lookAtPos);
+	
+	float pitch = 0.0f;
+	if (dirVector.y != 0.0f)
+	{
+		double dirX = dirVector.x;
+		double dirZ = dirVector.z;
+		
+		dirX *= dirX;
+		dirZ *= dirZ;
+
+		const float distance = sqrt(dirX + dirZ);
+		pitch = atan(dirVector.y / distance);
+	}
+
+	float yaw = 0.0f;
+	if (dirVector.x != 0)
+	{
+		yaw = atan(dirVector.x / dirVector.z);
+	}
+	if (dirVector.z > 0 )
+	{
+		yaw += XM_PI;
+	}
+
+	this->SetRotation(pitch, yaw, 0.0f);
 }
 
 void Camera::UpdateViewMatrix()

@@ -166,6 +166,7 @@
     <ClCompile Include="WindowContainer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Graphics\GraphicsTools.h" />
     <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\BufferTypes.h" />
     <ClInclude Include="Engine.h" />

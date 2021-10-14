@@ -51,6 +51,8 @@ void Graphics::RenderFrame() const
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
 	DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity();
+	m_camera->AdjustPosition(0.01f, 0.0f, 0.0f);
+	m_camera->SetLookAtPos(DirectX::XMFLOAT3(0, 0, 0));
 
 	// Model to world matrix
 	CB_VS_vertexShader cData;
