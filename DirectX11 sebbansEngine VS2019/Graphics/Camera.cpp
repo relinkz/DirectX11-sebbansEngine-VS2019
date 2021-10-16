@@ -1,8 +1,6 @@
 #include "Camera.h"
 #include "GraphicsTools.h"
 
-using namespace DirectX;
-
 Camera::Camera()
 {
 	m_pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -147,6 +145,26 @@ void Camera::SetLookAtPos(DirectX::XMFLOAT3 lookAtPos)
 	this->SetRotation(pitch, yaw, 0.0f);
 }
 
+const DirectX::XMVECTOR& Camera::GetForwardVector() const
+{
+	return m_vec_forward;
+}
+
+const DirectX::XMVECTOR& Camera::GetBackwardVector() const
+{
+	return m_vec_backward;
+}
+
+const DirectX::XMVECTOR& Camera::GetRightVector() const
+{
+	return m_vec_right;
+}
+
+const DirectX::XMVECTOR& Camera::GetLeftVector() const
+{
+	return m_vec_left;
+}
+
 void Camera::UpdateViewMatrix()
 {
 	// Calculate camera rotation matrix
@@ -164,4 +182,10 @@ void Camera::UpdateViewMatrix()
 	XMVECTOR upDir = XMVector3TransformCoord(DEFAULT_UP_VECTOR, camRotationMatrix);
 	// Rebuild
 	m_viewMatrix = XMMatrixLookAtLH(m_posVector, lookAtTarget, upDir);
+
+	XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw(0.0f, m_rot.y, 0.0f);
+	m_vec_forward = XMVector3TransformCoord(DEFAULT_FORWARD_VECTOR, vecRotationMatrix);
+	m_vec_backward = XMVector3TransformCoord(DEFAULT_BACKWARD_VECTOR, vecRotationMatrix);
+	m_vec_left = XMVector3TransformCoord(DEFAULT_LEFT_VECTOR, vecRotationMatrix);
+	m_vec_right = XMVector3TransformCoord(DEFAULT_RIGHT_VECTOR, vecRotationMatrix);
 }

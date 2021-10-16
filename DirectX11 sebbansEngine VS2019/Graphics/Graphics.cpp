@@ -24,14 +24,14 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 		return false;
 	}
 
-	m_camera = std::make_unique<Camera>();
-	m_camera->SetPosition(0.0f, 0.0f, -2.0f);
+	gameCamera = std::make_unique<Camera>();
+	gameCamera->SetPosition(0.0f, 0.0f, -2.0f);
 
 	float rotationDegrees = 90.0f;
 	float aspectRatio = static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight);
 	float nearZ = 0.1f;
 	float farZ = 1000.0f;
-	m_camera->SetProjectionValues(90.0f, aspectRatio, nearZ, farZ);
+	gameCamera->SetProjectionValues(90.0f, aspectRatio, nearZ, farZ);
 
 	return true;
 }
@@ -51,12 +51,10 @@ void Graphics::RenderFrame() const
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
 	DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity();
-	m_camera->AdjustPosition(0.01f, 0.0f, 0.0f);
-	m_camera->SetLookAtPos(DirectX::XMFLOAT3(0, 0, 0));
 
 	// Model to world matrix
 	CB_VS_vertexShader cData;
-	cData.m_matrix = worldMatrix * m_camera->GetViewMatrix() * m_camera->GetProjectionMatrix();
+	cData.m_matrix = worldMatrix * gameCamera->GetViewMatrix() * gameCamera->GetProjectionMatrix();
 	
 	// In pipeline matrises are swapped due to performance reasons
 	// transpose->swapping the x y axis of the matrix RowMajor -> columnMajor format

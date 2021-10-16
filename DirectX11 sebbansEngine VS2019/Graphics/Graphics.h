@@ -13,6 +13,7 @@ class Graphics
 public:
 	bool Initialize(HWND hwnd, const int width, const int height);
 	void RenderFrame() const;
+	std::unique_ptr<Camera> gameCamera;
 private:
 	bool InitializeDirectX(HWND hwnd);
 	bool InitializeSwapChain(HWND hwnd);
@@ -60,6 +61,4 @@ private:
 
 	int m_windowWidth = 0;
 	int m_windowHeight = 0;
-
-	std::unique_ptr<Camera> m_camera;
 };
