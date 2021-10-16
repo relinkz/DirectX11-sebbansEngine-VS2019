@@ -56,9 +56,14 @@ void Graphics::RenderFrame() const
 	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
-	DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity();
-
 	// Model to world matrix
+	static float translationOffset[3] = { 0.0f, 0.0f, 0.0f };
+	static float rotationOffset[3] = { 0.0f, 0.0f, 0.0f };
+	auto rotationQuat = XMVectorSet(rotationOffset[0], rotationOffset[1], rotationOffset[2], 1);
+	XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(rotationOffset[0], rotationOffset[1], rotationOffset[2]);
+	
+	DirectX::XMMATRIX worldMatrix = rotationMatrix * XMMatrixTranslation(translationOffset[0], translationOffset[1], translationOffset[2]);
+
 	CB_VS_vertexShader cData;
 	cData.m_matrix = worldMatrix * gameCamera->GetViewMatrix() * gameCamera->GetProjectionMatrix();
 	
@@ -101,8 +106,12 @@ void Graphics::RenderFrame() const
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	static unsigned int counter = 0;
+
 	// create test window
-	ImGui::Begin("Test");
+	ImGui::Begin("Object transform");
+	ImGui::DragFloat3("Translation X/Y/Z", translationOffset, 0.1f, -5.0f, 5.0f);
+	ImGui::DragFloat3("Rotation X/Y/Z", rotationOffset, 0.01f, -DirectX::XM_2PI, DirectX::XM_2PI);
 	ImGui::End();
 
 	ImGui::Render();
