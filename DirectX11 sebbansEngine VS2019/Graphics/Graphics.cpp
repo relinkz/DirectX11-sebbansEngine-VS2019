@@ -55,6 +55,7 @@ void Graphics::RenderFrame() const
 	m_deviceContext->PSSetShader(m_pixelShader->GetShader(), NULL, 0);
 	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+	m_deviceContext->OMSetBlendState(m_blendState.Get(), NULL, 0xFFFFFFFF);
 
 	// Model to world matrix
 	static float translationOffset[3] = { 0.0f, 0.0f, 0.0f };
@@ -71,7 +72,12 @@ void Graphics::RenderFrame() const
 	// transpose->swapping the x y axis of the matrix RowMajor -> columnMajor format
 	cData.m_matrix = DirectX::XMMatrixTranspose(cData.m_matrix); 
 
-	UpdateDynamicConstantBuffer(0, cData);
+	static float alpha = 1.0f;
+	CB_PS_pixelShader cPsData;
+	cPsData.alpha = alpha;
+
+	UpdateDynamicVsConstantBuffer(0, cData);
+	UpdateDynamicPsConstantBuffer(0, cPsData);
 
 	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
 	{
@@ -112,6 +118,7 @@ void Graphics::RenderFrame() const
 	ImGui::Begin("Object transform");
 	ImGui::DragFloat3("Translation X/Y/Z", translationOffset, 0.1f, -5.0f, 5.0f);
 	ImGui::DragFloat3("Rotation X/Y/Z", rotationOffset, 0.01f, -DirectX::XM_2PI, DirectX::XM_2PI);
+	ImGui::DragFloat("Alpha:", &alpha, 0.01f, 0, 1.0f);
 	ImGui::End();
 
 	ImGui::Render();
@@ -154,6 +161,11 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 	}
 
 	if (!InitializeRasterizer())
+	{
+		return false;
+	}
+
+	if (!InitializeBlendState())
 	{
 		return false;
 	}
@@ -415,6 +427,34 @@ bool Graphics::InitializeRasterizer()
 	return true;
 }
 
+bool Graphics::InitializeBlendState()
+{
+	D3D11_BLEND_DESC blendDesc;
+	ZeroMemory(&blendDesc, sizeof(blendDesc));
+
+	D3D11_RENDER_TARGET_BLEND_DESC rtbd;
+	ZeroMemory(&rtbd, sizeof(rtbd));
+
+	rtbd.BlendEnable = true;
+	rtbd.SrcBlend = D3D11_BLEND::D3D11_BLEND_SRC_ALPHA;
+	rtbd.DestBlend = D3D11_BLEND::D3D11_BLEND_INV_SRC_ALPHA;
+	rtbd.BlendOp = D3D11_BLEND_OP::D3D11_BLEND_OP_ADD;
+	rtbd.SrcBlendAlpha = D3D11_BLEND::D3D11_BLEND_ONE;
+	rtbd.DestBlendAlpha = D3D11_BLEND::D3D11_BLEND_ZERO;
+	rtbd.BlendOpAlpha = D3D11_BLEND_OP::D3D11_BLEND_OP_ADD;
+	rtbd.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE::D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	blendDesc.RenderTarget[0] = rtbd;
+	auto hr = m_device->CreateBlendState(&blendDesc, m_blendState.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to create blend state");
+		return false;
+	}
+
+	return true;
+}
+
 bool Graphics::InitializeFonts()
 {
 	m_spriteBatch = std::make_unique<DirectX::SpriteBatch>(m_deviceContext.Get());
@@ -476,30 +516,55 @@ bool Graphics::InitializeConstantBuffers()
 {
 	auto resourceFactory = ResourceBufferFactory();
 
-	auto simpleConstantBuffer = resourceFactory.CreateSimpleConstantBuffer(m_device);
+	auto simpleConstantBuffer = resourceFactory.CreateSimpleVsConstantBuffer(m_device);
 	if (!simpleConstantBuffer)
 	{
 		return false;
 	}
 
-	m_constantBuffers.push_back(std::move(simpleConstantBuffer));
+	auto simplePsConstantBuffer = resourceFactory.CreateSimplePsConstantBuffer(m_device);
+	if (!simplePsConstantBuffer)
+	{
+		return false;
+	}
+
+
+	m_vsConstantBuffers.push_back(std::move(simpleConstantBuffer));
+	m_psConstantBuffers.push_back(std::move(simplePsConstantBuffer));
 
 	return true;
 }
 
-bool Graphics::UpdateDynamicConstantBuffer(const size_t index, CB_VS_vertexShader newData) const
+bool Graphics::UpdateDynamicVsConstantBuffer(const size_t index, CB_VS_vertexShader newData) const
 {
-	if (m_constantBuffers.size() < index)
+	if (m_vsConstantBuffers.size() < index )
 	{
-		errorlogger::Log("setDynamicConstantBuffer, index higher an vector size");
+		errorlogger::Log("setDynamicVsConstantBuffer, index higher an vector size");
 		return false;
 	}
 
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	auto hr = m_deviceContext->Map(m_constantBuffers.at(index)->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	CopyMemory(mappedResource.pData, &newData, sizeof(CB_VS_vertexShader));
-	m_deviceContext->Unmap(m_constantBuffers.at(index)->GetBuffer(), index);
-	m_deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffers.at(index)->GetBufferAddress());
+	D3D11_MAPPED_SUBRESOURCE mappedResourceVs;
+	auto hr = m_deviceContext->Map(m_vsConstantBuffers.at(index)->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResourceVs);
+	CopyMemory(mappedResourceVs.pData, &newData, sizeof(CB_VS_vertexShader));
+	m_deviceContext->Unmap(m_vsConstantBuffers.at(index)->GetBuffer(), index);
+	m_deviceContext->VSSetConstantBuffers(0, 1, m_vsConstantBuffers.at(index)->GetBufferAddress());
+
+	return false;
+}
+
+bool Graphics::UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelShader newData) const
+{
+	if (m_psConstantBuffers.size() < index)
+	{
+		errorlogger::Log("setDynamicPsConstantBuffer, index higher an vector size");
+		return false;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE mappedResourcePs;
+	auto hr = m_deviceContext->Map(m_psConstantBuffers.at(index)->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResourcePs);
+	CopyMemory(mappedResourcePs.pData, &newData, sizeof(CB_PS_pixelShader));
+	m_deviceContext->Unmap(m_psConstantBuffers.at(index)->GetBuffer(), index);
+	m_deviceContext->PSSetConstantBuffers(0, 1, m_psConstantBuffers.at(index)->GetBufferAddress());
 
 	return false;
 }

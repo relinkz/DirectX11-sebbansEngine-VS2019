@@ -14,3 +14,8 @@ struct CB_VS_vertexShader
 {
 	DirectX::XMMATRIX m_matrix;
 };
+
+struct CB_PS_pixelShader
+{
+	float alpha = 1.0f;
+};

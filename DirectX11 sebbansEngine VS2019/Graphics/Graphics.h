@@ -31,12 +31,14 @@ private:
 	bool InitializeScene();
 	bool InitializeViewport();
 	bool InitializeRasterizer();
+	bool InitializeBlendState();
 	bool InitializeFonts();
 	bool InitializeSamplerStates();
 	bool InitializeTexture(const std::wstring& filePath);
 	bool InitializeConstantBuffers();
 
-	bool UpdateDynamicConstantBuffer(const size_t index, CB_VS_vertexShader newData) const;
+	bool UpdateDynamicVsConstantBuffer(const size_t index, CB_VS_vertexShader newData) const;
+	bool UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelShader newData) const;
 	void InitializeImGui(HWND hwnd) const;
 	void DestroyImGui() const;
 
@@ -53,6 +55,7 @@ private:
 	// The sampler-state interface holds a description for sampler state that you can bind to any shader stage of the pipeline for reference by texture sample operations.
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> m_blendState;
 
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilTexture;
@@ -67,7 +70,8 @@ private:
 	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
 	std::vector<std::unique_ptr<IResourceVertexBuffer>> m_vertexBuffer;
 	std::vector<std::unique_ptr<IResourceIndexBuffer>> m_indexBuffers;
-	std::vector<std::unique_ptr<IResourceConstantBuffer>> m_constantBuffers;
+	std::vector<std::unique_ptr<IResourceConstantBuffer>> m_vsConstantBuffers;
+	std::vector<std::unique_ptr<IResourceConstantBuffer>> m_psConstantBuffers;
 
 	int m_windowWidth = 0;
 	int m_windowHeight = 0;

@@ -86,7 +86,7 @@ ID3D11Buffer* SimpleResourceIndexBuffer::GetBuffer()
 	return m_indexBuffer.Get();
 }
 
-bool SimpleResourceConstantBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device)
+bool SimpleResourceVsConstantBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device)
 {
 	D3D11_BUFFER_DESC constantBufferDesc;
 	ZeroMemory(&constantBufferDesc, sizeof(constantBufferDesc));
@@ -107,12 +107,43 @@ bool SimpleResourceConstantBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Devic
 	return true;
 }
 
-ID3D11Buffer** SimpleResourceConstantBuffer::GetBufferAddress()
+ID3D11Buffer** SimpleResourceVsConstantBuffer::GetBufferAddress()
 {
 	return m_constantBuffer.GetAddressOf();
 }
 
-ID3D11Buffer* SimpleResourceConstantBuffer::GetBuffer()
+ID3D11Buffer* SimpleResourceVsConstantBuffer::GetBuffer()
+{
+	return m_constantBuffer.Get();
+}
+
+bool SimpleResourcePsConstantBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device)
+{
+	D3D11_BUFFER_DESC constantBufferDesc;
+	ZeroMemory(&constantBufferDesc, sizeof(constantBufferDesc));
+
+	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC; // Identify how the buffer is expected to be read from and written to. Frequency of update is a key factor
+	constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(CB_PS_pixelShader) + (16 - (sizeof(CB_PS_pixelShader) % 16))); // size is 16 * x
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER; // Identify how the buffer will be bound to the pipeline.
+	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; // this enable me to change the buffer.
+	constantBufferDesc.MiscFlags = 0; // Miscellaneous flags (see D3D11_RESOURCE_MISC_FLAG) or 0 if unused
+
+	auto hr = device->CreateBuffer(&constantBufferDesc, 0, m_constantBuffer.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to initialize constant buffer.");
+		return false;
+	}
+
+	return true;
+}
+
+ID3D11Buffer** SimpleResourcePsConstantBuffer::GetBufferAddress()
+{
+	return m_constantBuffer.GetAddressOf();
+}
+
+ID3D11Buffer* SimpleResourcePsConstantBuffer::GetBuffer()
 {
 	return m_constantBuffer.Get();
 }
