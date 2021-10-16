@@ -24,6 +24,9 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 		return false;
 	}
 
+	InitializeImGui(hwnd);
+
+
 	gameCamera = std::make_unique<Camera>();
 	gameCamera->SetPosition(0.0f, 0.0f, -2.0f);
 
@@ -93,7 +96,25 @@ void Graphics::RenderFrame() const
 	m_spriteFont->DrawString(m_spriteBatch.get(), helpers::strings::StringToWide(fpsString).c_str(), DirectX::XMFLOAT2(0,0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f,1.0f));
 	m_spriteBatch->End();
 
+	// start the imgui frame
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// create test window
+	ImGui::Begin("Test");
+	ImGui::End();
+
+	ImGui::Render();
+
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 	m_swapchain->Present(0, NULL);
+}
+
+Graphics::~Graphics()
+{
+	DestroyImGui();
 }
 
 bool Graphics::InitializeDirectX(HWND hwnd)
@@ -472,4 +493,22 @@ bool Graphics::UpdateDynamicConstantBuffer(const size_t index, CB_VS_vertexShade
 	m_deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffers.at(index)->GetBufferAddress());
 
 	return false;
+}
+
+void Graphics::InitializeImGui(HWND hwnd) const
+{
+	// Setup ImGui
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui_ImplWin32_Init(hwnd);
+	ImGui_ImplDX11_Init(m_device.Get(), m_deviceContext.Get());
+	ImGui::StyleColorsDark();
+}
+
+void Graphics::DestroyImGui() const
+{
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }

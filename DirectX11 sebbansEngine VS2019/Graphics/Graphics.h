@@ -4,6 +4,10 @@
 #include "Camera.h"
 #include "../Timer.h"
 
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_win32.h"
+#include "ImGui/imgui_impl_dx11.h"
+
 #include <memory>
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
@@ -15,6 +19,8 @@ public:
 	bool Initialize(HWND hwnd, const int width, const int height);
 	void RenderFrame() const;
 	std::unique_ptr<Camera> gameCamera;
+
+	~Graphics();
 private:
 	bool InitializeDirectX(HWND hwnd);
 	bool InitializeSwapChain(HWND hwnd);
@@ -31,6 +37,8 @@ private:
 	bool InitializeConstantBuffers();
 
 	bool UpdateDynamicConstantBuffer(const size_t index, CB_VS_vertexShader newData) const;
+	void InitializeImGui(HWND hwnd) const;
+	void DestroyImGui() const;
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
