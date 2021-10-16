@@ -34,7 +34,7 @@ private:
 	bool InitializeBlendState();
 	bool InitializeFonts();
 	bool InitializeSamplerStates();
-	bool InitializeTexture(const std::wstring& filePath);
+	bool InitializeTexture();
 	bool InitializeConstantBuffers();
 
 	bool UpdateDynamicVsConstantBuffer(const size_t index, CB_VS_vertexShader newData) const;
@@ -54,7 +54,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;
 	// The sampler-state interface holds a description for sampler state that you can bind to any shader stage of the pipeline for reference by texture sample operations.
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_grassTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_blueTexture;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> m_blendState;
 
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;

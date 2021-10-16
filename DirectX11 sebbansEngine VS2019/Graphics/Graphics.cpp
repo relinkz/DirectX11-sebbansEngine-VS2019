@@ -57,39 +57,73 @@ void Graphics::RenderFrame() const
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 	m_deviceContext->OMSetBlendState(m_blendState.Get(), NULL, 0xFFFFFFFF);
 
-	// Model to world matrix
-	static float translationOffset[3] = { 0.0f, 0.0f, 0.0f };
-	static float rotationOffset[3] = { 0.0f, 0.0f, 0.0f };
-	auto rotationQuat = XMVectorSet(rotationOffset[0], rotationOffset[1], rotationOffset[2], 1);
-	XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(rotationOffset[0], rotationOffset[1], rotationOffset[2]);
-	
-	DirectX::XMMATRIX worldMatrix = rotationMatrix * XMMatrixTranslation(translationOffset[0], translationOffset[1], translationOffset[2]);
+	{ // grass square
+		// Model to world matrix
+		static float translationOffset[3] = { 0.0f, 0.0f, 0.0f };
+		static float rotationOffset[3] = { 0.0f, 0.0f, 0.0f };
 
-	CB_VS_vertexShader cData;
-	cData.m_matrix = worldMatrix * gameCamera->GetViewMatrix() * gameCamera->GetProjectionMatrix();
-	
-	// In pipeline matrises are swapped due to performance reasons
-	// transpose->swapping the x y axis of the matrix RowMajor -> columnMajor format
-	cData.m_matrix = DirectX::XMMatrixTranspose(cData.m_matrix); 
+		auto rotationMatrix = XMMatrixRotationRollPitchYaw(rotationOffset[0], rotationOffset[1], rotationOffset[2]);
+		auto scaleMatrix = XMMatrixScaling(5.0f, 5.0f, 5.0f);
+		auto translationMatrix = XMMatrixTranslation(translationOffset[0], translationOffset[1], translationOffset[2]);
+		DirectX::XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
 
-	static float alpha = 1.0f;
-	CB_PS_pixelShader cPsData;
-	cPsData.alpha = alpha;
+		CB_VS_vertexShader cData;
+		cData.m_matrix = worldMatrix * gameCamera->GetViewMatrix() * gameCamera->GetProjectionMatrix();
+		cData.m_matrix = DirectX::XMMatrixTranspose(cData.m_matrix);
 
-	UpdateDynamicVsConstantBuffer(0, cData);
-	UpdateDynamicPsConstantBuffer(0, cPsData);
+		CB_PS_pixelShader cPsData;
+		cPsData.alpha = 1.0f;
 
-	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
-	{
-		UINT offset = 0;
-		UINT stride = m_vertexBuffer.at(i)->GetStride();
+		UpdateDynamicVsConstantBuffer(0, cData);
+		UpdateDynamicPsConstantBuffer(0, cPsData);
 
-		m_deviceContext->PSSetShaderResources(0, 1, m_texture.GetAddressOf());
-		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
-		m_deviceContext->IASetIndexBuffer(m_indexBuffers.at(i)->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
-		
-		m_deviceContext->DrawIndexed(m_indexBuffers.at(i)->GetNrOfIndencies(), 0, 0);
+		for (size_t i = 0; i < m_vertexBuffer.size(); i++)
+		{
+			UINT offset = 0;
+			UINT stride = m_vertexBuffer.at(i)->GetStride();
+
+			m_deviceContext->PSSetShaderResources(0, 1, m_grassTexture.GetAddressOf());
+			//m_deviceContext->PSSetShaderResources(1, 1, m_blueTexture.GetAddressOf());
+			m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
+			m_deviceContext->IASetIndexBuffer(m_indexBuffers.at(i)->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
+
+			m_deviceContext->DrawIndexed(m_indexBuffers.at(i)->GetNrOfIndencies(), 0, 0);
+		}
 	}
+	static float alpha = 1.0f;
+	{ // blue
+		// Model to world matrix
+		static float translationOffset[3] = { 0.0f, 0.0f, -1.0f };
+		static float rotationOffset[3] = { 0.0f, 0.0f, 0.0f };
+
+		auto rotationMatrix = XMMatrixRotationRollPitchYaw(rotationOffset[0], rotationOffset[1], rotationOffset[2]);
+		auto scaleMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+		auto translationMatrix = XMMatrixTranslation(translationOffset[0], translationOffset[1], translationOffset[2]);
+		DirectX::XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+		CB_VS_vertexShader cData;
+		cData.m_matrix = worldMatrix * gameCamera->GetViewMatrix() * gameCamera->GetProjectionMatrix();
+		cData.m_matrix = DirectX::XMMatrixTranspose(cData.m_matrix);
+
+		CB_PS_pixelShader cPsData;
+		cPsData.alpha = alpha;
+
+		UpdateDynamicVsConstantBuffer(0, cData);
+		UpdateDynamicPsConstantBuffer(0, cPsData);
+
+		for (size_t i = 0; i < m_vertexBuffer.size(); i++)
+		{
+			UINT offset = 0;
+			UINT stride = m_vertexBuffer.at(i)->GetStride();
+
+			m_deviceContext->PSSetShaderResources(0, 1, m_blueTexture.GetAddressOf());
+			m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
+			m_deviceContext->IASetIndexBuffer(m_indexBuffers.at(i)->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
+
+			m_deviceContext->DrawIndexed(m_indexBuffers.at(i)->GetNrOfIndencies(), 0, 0);
+		}
+	}
+
 
 	// Draw text
 	static unsigned int fpsCounter = 0;
@@ -116,8 +150,6 @@ void Graphics::RenderFrame() const
 
 	// create test window
 	ImGui::Begin("Object transform");
-	ImGui::DragFloat3("Translation X/Y/Z", translationOffset, 0.1f, -5.0f, 5.0f);
-	ImGui::DragFloat3("Rotation X/Y/Z", rotationOffset, 0.01f, -DirectX::XM_2PI, DirectX::XM_2PI);
 	ImGui::DragFloat("Alpha:", &alpha, 0.01f, 0, 1.0f);
 	ImGui::End();
 
@@ -382,8 +414,7 @@ bool Graphics::InitializeScene()
 	m_vertexBuffer.push_back(std::move(triangleBuff));
 	m_indexBuffers.push_back(std::move(triIndBuff));
 
-	std::wstring pathToFile = L"Data\\Textures\\YaoMingMeme.jpg";
-	if (InitializeTexture(pathToFile))
+	if (!InitializeTexture())
 	{
 		return false;
 	}
@@ -497,19 +528,28 @@ bool Graphics::InitializeSamplerStates()
 	return true;
 }
 
-bool Graphics::InitializeTexture(const std::wstring& filePath)
+bool Graphics::InitializeTexture()
 {
 	/*
 	* need CoInitialize to be called before working, spritefont might be the one calling according to internet.
 	*/
-	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), filePath.c_str(), nullptr, m_texture.GetAddressOf());
+	std::wstring pathToFile = L"Data\\Textures\\Grass Seamless Texture.jpg";
+	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_grassTexture.GetAddressOf());
 	if (FAILED(hr))
 	{
-		errorlogger::Log(hr, "Failed to create Texture");
+		errorlogger::Log(hr, "Failed to grass Texture");
 		return false;
 	}
 
-	return false;
+	pathToFile = L"Data\\Textures\\blue.jpg";
+	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_blueTexture.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to grass Texture");
+		return false;
+	}
+
+	return true;
 }
 
 bool Graphics::InitializeConstantBuffers()
