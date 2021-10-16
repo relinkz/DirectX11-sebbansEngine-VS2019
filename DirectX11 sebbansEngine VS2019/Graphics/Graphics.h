@@ -2,6 +2,7 @@
 #include "IShaders.h"
 #include "IResourceBuffer.h"
 #include "Camera.h"
+#include "../Timer.h"
 
 #include <memory>
 #include <SpriteBatch.h>
@@ -53,6 +54,7 @@ private:
 	std::unique_ptr<IPixelShader> m_pixelShader;
 	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
 	std::unique_ptr<DirectX::SpriteFont> m_spriteFont;
+	std::unique_ptr<Timer> m_fpsTimer;
 
 	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
 	std::vector<std::unique_ptr<IResourceVertexBuffer>> m_vertexBuffer;

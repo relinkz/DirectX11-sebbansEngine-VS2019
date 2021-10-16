@@ -1,5 +1,6 @@
 #pragma once
 #include "WindowContainer.h"
+#include "Timer.h"
 
 class Engine : public WindowContainer
 {
@@ -8,5 +9,8 @@ public:
 	bool ProcessMessages();
 	void Update();
 	void RenderFrame();
+
+private:
+	std::unique_ptr<Timer> m_timer;
 };
 

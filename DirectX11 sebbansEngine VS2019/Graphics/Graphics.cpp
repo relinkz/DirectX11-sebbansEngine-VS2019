@@ -33,6 +33,9 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 	float farZ = 1000.0f;
 	gameCamera->SetProjectionValues(90.0f, aspectRatio, nearZ, farZ);
 
+	m_fpsTimer = std::make_unique<Timer>();
+	m_fpsTimer->Start();
+
 	return true;
 }
 
@@ -75,11 +78,22 @@ void Graphics::RenderFrame() const
 	}
 
 	// Draw text
+	static unsigned int fpsCounter = 0;
+	static std::string fpsString = "FPS: 0";
+	fpsCounter++;
+	constexpr float secondInMiliSec = 1000.0f;
+	if (m_fpsTimer->GetMilisecondsElapsed() > secondInMiliSec)
+	{
+		fpsString = "FPS: " + std::to_string(fpsCounter);
+		fpsCounter = 0;
+		m_fpsTimer->Restart();
+	}
+
 	m_spriteBatch->Begin();
-	m_spriteFont->DrawString(m_spriteBatch.get(), L"Hello World", DirectX::XMFLOAT2(0,0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f,1.0f));
+	m_spriteFont->DrawString(m_spriteBatch.get(), helpers::strings::StringToWide(fpsString).c_str(), DirectX::XMFLOAT2(0,0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f,1.0f));
 	m_spriteBatch->End();
 
-	m_swapchain->Present(1, NULL);
+	m_swapchain->Present(0, NULL);
 }
 
 bool Graphics::InitializeDirectX(HWND hwnd)

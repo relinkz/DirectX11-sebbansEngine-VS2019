@@ -2,6 +2,9 @@
 
 bool Engine::Initialize(HINSTANCE hInstance, const std::string& wTitle, const std::string& wClassName, const uint32_t width, const uint32_t height)
 {
+	m_timer = std::make_unique<Timer>();
+	m_timer->Start();
+
 	m_renderWindow = std::make_unique<RenderWindow>();
 	if (!m_renderWindow->Initialize(this, hInstance, wTitle, wClassName, width, height))
 	{
@@ -27,8 +30,11 @@ bool Engine::ProcessMessages()
 
 void Engine::Update()
 {
-	const float cameraSpeed = 0.02f;
-	const float cameraTurnSpeed = 0.01f;
+	float dt = m_timer->GetMilisecondsElapsed();
+	m_timer->Restart();
+
+	const float cameraSpeed = 0.02f * dt;
+	const float cameraTurnSpeed = 0.01f *dt;
 
 	while (!m_keyboard.CharBufferIsEmpty())
 	{
