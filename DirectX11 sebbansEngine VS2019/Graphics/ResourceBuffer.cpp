@@ -20,11 +20,7 @@ bool SimpleResourceVertexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>
 	vertexBufferData.pSysMem = vData.data();
 
 	auto hr = device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_vertexBuffer.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create vertex buffer.");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create vertex buffer.");
 
 	return true;
 }
@@ -62,11 +58,7 @@ bool SimpleResourceIndexBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>&
 	indexBufferData.pSysMem = iData.data();
 
 	auto hr = device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_indexBuffer.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create index buffer.");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create index buffer.");
 
 	return true;
 }
@@ -98,11 +90,7 @@ bool SimpleResourceVsConstantBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Dev
 	constantBufferDesc.MiscFlags = 0; // Miscellaneous flags (see D3D11_RESOURCE_MISC_FLAG) or 0 if unused
 
 	auto hr = device->CreateBuffer(&constantBufferDesc, 0, m_constantBuffer.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to initialize constant buffer.");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to initialize constant buffer.");
 
 	return true;
 }
@@ -129,11 +117,7 @@ bool SimpleResourcePsConstantBuffer::Initialize(Microsoft::WRL::ComPtr<ID3D11Dev
 	constantBufferDesc.MiscFlags = 0; // Miscellaneous flags (see D3D11_RESOURCE_MISC_FLAG) or 0 if unused
 
 	auto hr = device->CreateBuffer(&constantBufferDesc, 0, m_constantBuffer.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to initialize constant buffer.");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to initialize constant buffer.");
 
 	return true;
 }

@@ -9,20 +9,29 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 	m_windowWidth = width;
 	m_windowHeight = height;
 
-	if (!InitializeDirectX(hwnd))
+	try
 	{
+		if (!InitializeDirectX(hwnd))
+		{
+			return false;
+		}
+
+		if (!InitializeShaders())
+		{
+			return false;
+		}
+
+		if (!InitializeScene())
+		{
+			return false;
+		}
+	}
+	catch (COMException& exception)
+	{
+		errorlogger::Log(exception);
 		return false;
 	}
 
-	if (!InitializeShaders())
-	{
-		return false;
-	}
-
-	if (!InitializeScene())
-	{
-		return false;
-	}
 
 	InitializeImGui(hwnd);
 
@@ -237,11 +246,7 @@ bool Graphics::InitializeSwapChain(HWND hwnd)
 		m_deviceContext.GetAddressOf()	// Device context address
 	);
 
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create swapchain");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create swapchain.");
 
 	return true;
 }
@@ -251,19 +256,13 @@ bool Graphics::InitializeRenderTargetViewWithSwapchain()
 	// get backbuffer as a 2D texture
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
 	HRESULT hr = m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf()));
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to get texture from backbuffer");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to get texture from backbuffer.");
+
 
 	// create the render target view
 	hr = m_device->CreateRenderTargetView(backBuffer.Get(), NULL, m_renderTargetView.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create render target view");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create render target view.");
+
 	return true;
 }
 
@@ -283,18 +282,10 @@ bool Graphics::InitializeDepthStencil()
 	depthStencilDesc.MiscFlags = 0;
 
 	auto hr = m_device->CreateTexture2D(&depthStencilDesc, NULL, m_depthStencilTexture.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create depth stencil texture buffer");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create depth stencil texture buffer.");
 
 	hr = m_device->CreateDepthStencilView(m_depthStencilTexture.Get(), NULL, m_depthStencilView.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create depth stencil view");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create depth stencil view.");
 
 	// assign depthStencil to output merger
 	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
@@ -312,11 +303,7 @@ bool Graphics::InitializeDepthStencilState()
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 
 	auto hr = m_device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create depth stencil view");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create depth stencil State.");
 
 	return true;
 }
@@ -442,11 +429,7 @@ bool Graphics::InitializeRasterizer()
 	rasterizerDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
 
 	auto hr = m_device->CreateRasterizerState(&rasterizerDesc, m_rasterizerState.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create rasterizer state");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create rasterizer state.");
 
 	D3D11_RASTERIZER_DESC rasterizerDescCullFront;
 	ZeroMemory(&rasterizerDescCullFront, sizeof(D3D11_RASTERIZER_DESC));
@@ -455,11 +438,7 @@ bool Graphics::InitializeRasterizer()
 	rasterizerDescCullFront.CullMode = D3D11_CULL_MODE::D3D11_CULL_FRONT;
 
 	hr = m_device->CreateRasterizerState(&rasterizerDescCullFront, m_rasterizerStateCullFront.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create rasterizer Cull Front state");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create rasterizer Cull Front state.");
 
 	return true;
 }
@@ -483,11 +462,7 @@ bool Graphics::InitializeBlendState()
 
 	blendDesc.RenderTarget[0] = rtbd;
 	auto hr = m_device->CreateBlendState(&blendDesc, m_blendState.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create blend state");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create blend state.");
 
 	return true;
 }
@@ -525,11 +500,7 @@ bool Graphics::InitializeSamplerStates()
 	sampleDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	auto hr = m_device->CreateSamplerState(&sampleDesc, m_samplerState.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to create sampler state");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to create sampler state.");
 
 	return true;
 }
@@ -541,27 +512,15 @@ bool Graphics::InitializeTexture()
 	*/
 	std::wstring pathToFile = L"Data\\Textures\\Grass Seamless Texture.jpg";
 	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_grassTexture.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to grass Texture");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to grass Texture.");
 
 	pathToFile = L"Data\\Textures\\blue.jpg";
 	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_blueTexture.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to blue Texture");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to blue Texture.");
 
 	pathToFile = L"Data\\Textures\\Bricks Seamless Texture.jpg";
 	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_pavementTexture.GetAddressOf());
-	if (FAILED(hr))
-	{
-		errorlogger::Log(hr, "Failed to Pavement Texture");
-		return false;
-	}
+	COM_ERROR_IF_FAILED(hr, "Failed to Pavement Texture.");
 
 	return true;
 }
@@ -599,6 +558,8 @@ bool Graphics::UpdateDynamicVsConstantBuffer(const size_t index, CB_VS_vertexSha
 
 	D3D11_MAPPED_SUBRESOURCE mappedResourceVs;
 	auto hr = m_deviceContext->Map(m_vsConstantBuffers.at(index)->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResourceVs);
+	COM_ERROR_IF_FAILED(hr, "Failed to map ConstantBuffer.");
+
 	CopyMemory(mappedResourceVs.pData, &newData, sizeof(CB_VS_vertexShader));
 	m_deviceContext->Unmap(m_vsConstantBuffers.at(index)->GetBuffer(), index);
 	m_deviceContext->VSSetConstantBuffers(0, 1, m_vsConstantBuffers.at(index)->GetBufferAddress());
@@ -616,6 +577,8 @@ bool Graphics::UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelShad
 
 	D3D11_MAPPED_SUBRESOURCE mappedResourcePs;
 	auto hr = m_deviceContext->Map(m_psConstantBuffers.at(index)->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResourcePs);
+	COM_ERROR_IF_FAILED(hr, "Failed to map ConstantBuffer.");
+
 	CopyMemory(mappedResourcePs.pData, &newData, sizeof(CB_PS_pixelShader));
 	m_deviceContext->Unmap(m_psConstantBuffers.at(index)->GetBuffer(), index);
 	m_deviceContext->PSSetConstantBuffers(0, 1, m_psConstantBuffers.at(index)->GetBufferAddress());

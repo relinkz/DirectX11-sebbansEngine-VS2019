@@ -173,6 +173,7 @@
     <ClCompile Include="WindowContainer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ComException.h" />
     <ClInclude Include="Graphics\GraphicsTools.h" />
     <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\BufferTypes.h" />
