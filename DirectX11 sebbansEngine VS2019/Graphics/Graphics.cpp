@@ -51,47 +51,13 @@ void Graphics::RenderFrame() const
 	m_deviceContext->IASetInputLayout(m_vertexShader->GetInputLayout());
 	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	m_deviceContext->VSSetShader(m_vertexShader->GetShader(), NULL, 0);
-	m_deviceContext->RSSetState(m_rasterizerState.Get());
 	m_deviceContext->PSSetShader(m_pixelShader->GetShader(), NULL, 0);
 	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 	m_deviceContext->OMSetBlendState(m_blendState.Get(), NULL, 0xFFFFFFFF);
 
-	{ // grass square
-		// Model to world matrix
-		static float translationOffset[3] = { 0.0f, 0.0f, 0.0f };
-		static float rotationOffset[3] = { 0.0f, 0.0f, 0.0f };
-
-		auto rotationMatrix = XMMatrixRotationRollPitchYaw(rotationOffset[0], rotationOffset[1], rotationOffset[2]);
-		auto scaleMatrix = XMMatrixScaling(5.0f, 5.0f, 5.0f);
-		auto translationMatrix = XMMatrixTranslation(translationOffset[0], translationOffset[1], translationOffset[2]);
-		DirectX::XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
-
-		CB_VS_vertexShader cData;
-		cData.m_matrix = worldMatrix * gameCamera->GetViewMatrix() * gameCamera->GetProjectionMatrix();
-		cData.m_matrix = DirectX::XMMatrixTranspose(cData.m_matrix);
-
-		CB_PS_pixelShader cPsData;
-		cPsData.alpha = 1.0f;
-
-		UpdateDynamicVsConstantBuffer(0, cData);
-		UpdateDynamicPsConstantBuffer(0, cPsData);
-
-		for (size_t i = 0; i < m_vertexBuffer.size(); i++)
-		{
-			UINT offset = 0;
-			UINT stride = m_vertexBuffer.at(i)->GetStride();
-
-			m_deviceContext->PSSetShaderResources(0, 1, m_grassTexture.GetAddressOf());
-			//m_deviceContext->PSSetShaderResources(1, 1, m_blueTexture.GetAddressOf());
-			m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
-			m_deviceContext->IASetIndexBuffer(m_indexBuffers.at(i)->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
-
-			m_deviceContext->DrawIndexed(m_indexBuffers.at(i)->GetNrOfIndencies(), 0, 0);
-		}
-	}
 	static float alpha = 1.0f;
-	{ // blue
+	{ // pavement
 		// Model to world matrix
 		static float translationOffset[3] = { 0.0f, 0.0f, -1.0f };
 		static float rotationOffset[3] = { 0.0f, 0.0f, 0.0f };
@@ -116,10 +82,14 @@ void Graphics::RenderFrame() const
 			UINT offset = 0;
 			UINT stride = m_vertexBuffer.at(i)->GetStride();
 
-			m_deviceContext->PSSetShaderResources(0, 1, m_blueTexture.GetAddressOf());
+			m_deviceContext->PSSetShaderResources(0, 1, m_pavementTexture.GetAddressOf());
 			m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 			m_deviceContext->IASetIndexBuffer(m_indexBuffers.at(i)->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
-
+			
+			m_deviceContext->RSSetState(m_rasterizerStateCullFront.Get());
+			m_deviceContext->DrawIndexed(m_indexBuffers.at(i)->GetNrOfIndencies(), 0, 0);
+			
+			m_deviceContext->RSSetState(m_rasterizerState.Get());
 			m_deviceContext->DrawIndexed(m_indexBuffers.at(i)->GetNrOfIndencies(), 0, 0);
 		}
 	}
@@ -374,29 +344,52 @@ bool Graphics::InitializeScene()
 	ResourceBufferFactory resourceFactory = ResourceBufferFactory();
 	std::vector<Vertex> triangle = 
 	{ 
+		Vertex(), Vertex(), Vertex(), Vertex(),
 		Vertex(), Vertex(), Vertex(), Vertex()
 	};
 
-	triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f); // Bot Left
+	triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, -0.5f); // Front Bot Left
+	triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, -0.5f);	// Front Top Left
+	triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, -0.5f);		// Front Top Right
+	triangle[3].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, -0.5f);	// Front Bot Right
+
+	triangle[4].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 0.5f);	// Back Bot Left
+	triangle[5].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 0.5f);		// Back Top Left
+	triangle[6].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 0.5f);		// Back Top Right
+	triangle[7].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 0.5f);		// Back Bot Right
+	
 	triangle[0].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
-	triangle[0].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
-
-	triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f); // Top Left
 	triangle[1].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
-	triangle[1].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
-
-	triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f); // Top Right
 	triangle[2].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
-	triangle[2].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
-
-	triangle[3].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f); // Bot Right
 	triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	triangle[4].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
+	triangle[5].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	triangle[6].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
+	triangle[7].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	
+	triangle[0].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+	triangle[1].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+	triangle[2].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
 	triangle[3].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
+	triangle[4].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+	triangle[5].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+	triangle[6].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
+	triangle[7].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
 
 	std::vector<DWORD> indices =
 	{
-		0, 1, 2,
-		0, 2, 3
+		0, 1, 2, // Front
+		0, 2, 3, // Front
+		4, 7, 6, // Back
+		4, 6, 5, // Back
+		3, 2, 6, // Right side
+		3, 6, 7, // Right side
+		4, 5, 1, // Left side
+		4, 1, 0, // Left side
+		1, 5, 6, // Top
+		1, 6, 2, // Top
+		0, 3, 7, // Bot
+		0, 7, 4, // Bot
 	};
 
 	auto triangleBuff = resourceFactory.CreateSimpleVertexBuffer(m_device, triangle);
@@ -452,6 +445,19 @@ bool Graphics::InitializeRasterizer()
 	if (FAILED(hr))
 	{
 		errorlogger::Log(hr, "Failed to create rasterizer state");
+		return false;
+	}
+
+	D3D11_RASTERIZER_DESC rasterizerDescCullFront;
+	ZeroMemory(&rasterizerDescCullFront, sizeof(D3D11_RASTERIZER_DESC));
+
+	rasterizerDescCullFront.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
+	rasterizerDescCullFront.CullMode = D3D11_CULL_MODE::D3D11_CULL_FRONT;
+
+	hr = m_device->CreateRasterizerState(&rasterizerDescCullFront, m_rasterizerStateCullFront.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to create rasterizer Cull Front state");
 		return false;
 	}
 
@@ -545,7 +551,15 @@ bool Graphics::InitializeTexture()
 	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_blueTexture.GetAddressOf());
 	if (FAILED(hr))
 	{
-		errorlogger::Log(hr, "Failed to grass Texture");
+		errorlogger::Log(hr, "Failed to blue Texture");
+		return false;
+	}
+
+	pathToFile = L"Data\\Textures\\Bricks Seamless Texture.jpg";
+	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_pavementTexture.GetAddressOf());
+	if (FAILED(hr))
+	{
+		errorlogger::Log(hr, "Failed to Pavement Texture");
 		return false;
 	}
 
