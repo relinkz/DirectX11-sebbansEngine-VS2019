@@ -348,33 +348,41 @@ bool Graphics::InitializeScene()
 	triangle[0].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
 	triangle[1].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
 	triangle[2].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
-	triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Orange);
 	triangle[4].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
-	triangle[5].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
-	triangle[6].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
-	triangle[7].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
+	triangle[5].m_color = DirectX::XMFLOAT3(DirectX::Colors::Cyan);
+	triangle[6].m_color = DirectX::XMFLOAT3(DirectX::Colors::AntiqueWhite);
+	triangle[7].m_color = DirectX::XMFLOAT3(DirectX::Colors::Black);
 	
-	triangle[0].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+	triangle[0].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
 	triangle[1].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
-	triangle[2].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
+	triangle[2].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
 	triangle[3].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
-	triangle[4].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
-	triangle[5].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
-	triangle[6].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
-	triangle[7].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
+	
+	triangle[4].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
+	triangle[5].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+	triangle[6].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+	triangle[7].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
 
 	std::vector<DWORD> indices =
 	{
 		0, 1, 2, // Front
 		0, 2, 3, // Front
+
+		2, 3, 6, // Right
+		3, 6, 7, // Right
+
 		4, 7, 6, // Back
 		4, 6, 5, // Back
-		3, 2, 6, // Right side
-		3, 6, 7, // Right side
-		4, 5, 1, // Left side
-		4, 1, 0, // Left side
-		1, 5, 6, // Top
-		1, 6, 2, // Top
+
+		0, 1, 5, // left
+		5, 4, 0, // left
+
+		//1, 5, 6, // Top
+		//2, 5, 6, // Top
+
+		//// UV blir interpolerade
+
 		0, 3, 7, // Bot
 		0, 7, 4, // Bot
 	};
