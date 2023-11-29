@@ -69,6 +69,9 @@ void Graphics::RenderFrame() const
 	m_deviceContext->OMSetBlendState(m_blendState.Get(), NULL, 0xFFFFFFFF);
 
 	static float alpha = 1.0f;
+	static float objectRotX = 0.0f;
+	static float objectRotY = 0.0f;
+	static float objectRotZ = 0.0f;
 	{ // pavement
 		// Model to world matrix
 		static float translationOffset[3] = { 0.0f, 0.0f, -1.0f };
@@ -83,10 +86,17 @@ void Graphics::RenderFrame() const
 		cData.m_matrix = worldMatrix * gameCamera->GetViewMatrix() * gameCamera->GetProjectionMatrix();
 		cData.m_matrix = DirectX::XMMatrixTranspose(cData.m_matrix);
 
+		DirectX::XMFLOAT3 objRot = { objectRotX, objectRotY, objectRotZ };
+		m_modelsInScene.at(0)->SetRotation(objRot);
+		CB_VS_vertexShader cWorldMatrix;
+		cWorldMatrix.m_matrix = m_modelsInScene.at(0)->GetWorldMatrix();
+		cWorldMatrix.m_matrix = DirectX::XMMatrixTranspose(cWorldMatrix.m_matrix);
+
 		CB_PS_pixelShader cPsData;
 		cPsData.alpha = alpha;
 
 		UpdateDynamicVsConstantBuffer(0, cData);
+		UpdateDynamicVsConstantBuffer(1, cWorldMatrix);
 		UpdateDynamicPsConstantBuffer(0, cPsData);
 
 		for (size_t i = 0; i < m_vertexBuffer.size(); i++)
@@ -132,6 +142,9 @@ void Graphics::RenderFrame() const
 	// create test window
 	ImGui::Begin("Object transform");
 	ImGui::DragFloat("Alpha:", &alpha, 0.01f, 0, 1.0f);
+	ImGui::DragFloat("Rotation X:", &objectRotX, 0.01f, 0, 2.0f * DirectX::XM_PI);
+	ImGui::DragFloat("Rotation Y:", &objectRotY, 0.01f, 0, 2.0f * DirectX::XM_PI);
+	ImGui::DragFloat("Rotation Z:", &objectRotZ, 0.01f, 0, 2.0f * DirectX::XM_PI);
 	ImGui::End();
 
 	ImGui::Render();
@@ -335,6 +348,7 @@ bool Graphics::InitializeScene()
 
 	auto vb = model->GetResourceVertexBuffer(m_device);
 	m_vertexBuffer.push_back(move(vb));
+	m_modelsInScene.emplace_back(move(model));
 
 	std::wstring pathToFile = L"Data\\Textures\\YaoMingMeme.jpg";
 	//std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
@@ -480,6 +494,12 @@ bool Graphics::InitializeConstantBuffers()
 		return false;
 	}
 
+	auto simpleCMatrixVsBuffer = resourceFactory.CreateSimpleVsConstantBuffer(m_device);
+	if (!simpleCMatrixVsBuffer)
+	{
+		return false;
+	}
+
 	auto simplePsConstantBuffer = resourceFactory.CreateSimplePsConstantBuffer(m_device);
 	if (!simplePsConstantBuffer)
 	{
@@ -488,6 +508,7 @@ bool Graphics::InitializeConstantBuffers()
 
 
 	m_vsConstantBuffers.push_back(std::move(simpleConstantBuffer));
+	m_vsConstantBuffers.push_back(std::move(simpleCMatrixVsBuffer));
 	m_psConstantBuffers.push_back(std::move(simplePsConstantBuffer));
 
 	return true;
@@ -507,7 +528,7 @@ bool Graphics::UpdateDynamicVsConstantBuffer(const size_t index, CB_VS_vertexSha
 
 	CopyMemory(mappedResourceVs.pData, &newData, sizeof(CB_VS_vertexShader));
 	m_deviceContext->Unmap(m_vsConstantBuffers.at(index)->GetBuffer(), index);
-	m_deviceContext->VSSetConstantBuffers(0, 1, m_vsConstantBuffers.at(index)->GetBufferAddress());
+	m_deviceContext->VSSetConstantBuffers(index, 1, m_vsConstantBuffers.at(index)->GetBufferAddress());
 
 	return false;
 }

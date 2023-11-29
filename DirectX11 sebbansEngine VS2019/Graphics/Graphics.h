@@ -12,6 +12,7 @@
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
 #include <WICTextureLoader.h>
+#include "IModel.h"
 
 class Graphics
 {
@@ -76,6 +77,8 @@ private:
 	std::vector<std::unique_ptr<IResourceIndexBuffer>> m_indexBuffers;
 	std::vector<std::unique_ptr<IResourceConstantBuffer>> m_vsConstantBuffers;
 	std::vector<std::unique_ptr<IResourceConstantBuffer>> m_psConstantBuffers;
+
+	std::vector<std::unique_ptr<IModel>> m_modelsInScene;
 
 	int m_windowWidth = 0;
 	int m_windowHeight = 0;
