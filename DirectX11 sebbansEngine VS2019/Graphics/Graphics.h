@@ -58,6 +58,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_grassTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pavementTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_blueTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_ObjTexture;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> m_blendState;
 
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;

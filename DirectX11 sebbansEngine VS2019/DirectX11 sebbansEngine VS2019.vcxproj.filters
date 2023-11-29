@@ -49,6 +49,12 @@
     <Filter Include="Source Files\Graphics\ImGui">
       <UniqueIdentifier>{43bb4859-2d4e-4ae0-a6a4-b93c9117181a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Graphics\Models">
+      <UniqueIdentifier>{e7a10f55-afd0-40e4-bf10-0aeb0722658d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Graphics\Models">
+      <UniqueIdentifier>{67edca03-7176-4b9c-8ee9-e88fe870d34f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -122,6 +128,12 @@
     </ClCompile>
     <ClCompile Include="Graphics\ImGui\imgui_widgets.cpp">
       <Filter>Source Files\Graphics\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ModelFactory.cpp">
+      <Filter>Source Files\Graphics\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\QuadModel.cpp">
+      <Filter>Source Files\Graphics\Models</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -215,6 +227,18 @@
     <ClInclude Include="ComException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OBJ_Loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IModel.h">
+      <Filter>Header Files\Graphics\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ModelFactory.h">
+      <Filter>Header Files\Graphics\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\QuadModel.h">
+      <Filter>Header Files\Graphics\Models</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Graphics\VertexShader.hlsl">
@@ -226,5 +250,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Data\ObjFiles\QuadObj.obj">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="CubeObj.obj">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\OneDrive - Sigma Technology\Dokument\tex_box_01_d.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

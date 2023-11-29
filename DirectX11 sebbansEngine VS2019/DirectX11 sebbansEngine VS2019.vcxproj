@@ -165,8 +165,10 @@
     <ClCompile Include="Keyboard\Keyboard.cpp" />
     <ClCompile Include="Keyboard\KeyboardEvent.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Graphics\ModelFactory.cpp" />
     <ClCompile Include="Mouse\Mouse.cpp" />
     <ClCompile Include="Mouse\MouseEvent.cpp" />
+    <ClCompile Include="Graphics\QuadModel.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
     <ClCompile Include="Graphics\Shaders.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -195,10 +197,14 @@
     <ClInclude Include="Graphics\ShaderFactory.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Graphics\IShaders.h" />
+    <ClInclude Include="Graphics\IModel.h" />
     <ClInclude Include="Keyboard\Keyboard.h" />
     <ClInclude Include="Keyboard\KeyboardEvent.h" />
+    <ClInclude Include="Graphics\ModelFactory.h" />
     <ClInclude Include="Mouse\Mouse.h" />
     <ClInclude Include="Mouse\MouseEvent.h" />
+    <ClInclude Include="OBJ_Loader.h" />
+    <ClInclude Include="Graphics\QuadModel.h" />
     <ClInclude Include="RenderWindow.h" />
     <ClInclude Include="Graphics\Shaders.h" />
     <ClInclude Include="Timer.h" />
@@ -228,6 +234,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CubeObj.obj" />
+    <Text Include="Data\ObjFiles\QuadObj.obj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\OneDrive - Sigma Technology\Dokument\tex_box_01_d.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

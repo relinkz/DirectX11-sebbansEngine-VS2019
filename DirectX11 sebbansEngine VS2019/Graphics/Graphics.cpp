@@ -2,6 +2,9 @@
 #include "ShaderFactory.h"
 #include "ResourceBufferFactory.h"
 #include "AdapterReader.h"
+#include "../OBJ_Loader.h"
+#include <locale>
+#include <codecvt>
 
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
@@ -91,7 +94,7 @@ void Graphics::RenderFrame() const
 			UINT offset = 0;
 			UINT stride = m_vertexBuffer.at(i)->GetStride();
 
-			m_deviceContext->PSSetShaderResources(0, 1, m_pavementTexture.GetAddressOf());
+			m_deviceContext->PSSetShaderResources(0, 1, m_ObjTexture.GetAddressOf());
 			m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 			
 			m_deviceContext->RSSetState(m_rasterizerStateCullFront.Get());
@@ -327,56 +330,48 @@ bool Graphics::InitializeShaders()
 
 bool Graphics::InitializeScene()
 {
-	ResourceBufferFactory resourceFactory = ResourceBufferFactory();
-	std::vector<Vertex> triangle =
+	objl::Loader loader;
+	bool loadout = loader.LoadFile("./Data/ObjFiles/QuadObj.obj");
+
+	for (int meshId = 0; meshId < loader.LoadedMeshes.size(); meshId++)
 	{
-		Vertex(), Vertex(), Vertex(),
-		Vertex(), Vertex(), Vertex()
-	};
+		objl::Mesh mesh = loader.LoadedMeshes[meshId];
+		std::string test = mesh.MeshMaterial.name;
 
-	// triangle 1
-	{
-		triangle[0].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f);
-		triangle[0].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
-		triangle[0].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+		std::vector<Vertex> obj = std::vector<Vertex>(mesh.Vertices.size());
 
-		triangle[1].m_pos = DirectX::XMFLOAT3(-0.5f, 0.5f, 1.0f);
-		triangle[1].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
-		triangle[1].m_texCoord = DirectX::XMFLOAT2(0.0f, 1.0f);
+		for (size_t i = 0; i < mesh.Vertices.size(); i++)
+		{
+			auto pos = mesh.Vertices[i].Position;
+			obj.at(i).m_pos = DirectX::XMFLOAT3(pos.X, pos.Y, pos.Z);
+			auto uvs = mesh.Vertices[i].TextureCoordinate;
+			obj.at(i).m_texCoord = DirectX::XMFLOAT2(uvs.X, uvs.Y);
+		}
 
-		triangle[2].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);		// Front Top Right
-		triangle[2].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
-		triangle[2].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
-	}
+		std::vector<Vertex> nonIndex = std::vector<Vertex>(mesh.Indices.size());
+		for (size_t i = 0; i < mesh.Indices.size(); i++)
+		{
+			nonIndex.at(i) = obj.at(mesh.Indices[i]);
+		}
 
-	// triangle 2
-	{
-		triangle[3].m_pos = DirectX::XMFLOAT3(-0.5f, -0.5f, 1.0f);
-		triangle[3].m_color = DirectX::XMFLOAT3(DirectX::Colors::Red);
-		triangle[3].m_texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+		ResourceBufferFactory resourceFactory = ResourceBufferFactory();
+		auto triangleBuff = resourceFactory.CreateSimpleVertexBuffer(m_device, nonIndex);
+		if (!triangleBuff)
+		{
+			return false;
+		}
 
-		triangle[4].m_pos = DirectX::XMFLOAT3(0.5f, -0.5f, 1.0f);
-		triangle[4].m_color = DirectX::XMFLOAT3(DirectX::Colors::Green);
-		triangle[4].m_texCoord = DirectX::XMFLOAT2(1.0f, 0.0f);
-
-		triangle[5].m_pos = DirectX::XMFLOAT3(0.5f, 0.5f, 1.0f);
-		triangle[5].m_color = DirectX::XMFLOAT3(DirectX::Colors::Blue);
-		triangle[5].m_texCoord = DirectX::XMFLOAT2(1.0f, 1.0f);
+		m_vertexBuffer.push_back(std::move(triangleBuff));
 	}
 
 
-	auto triangleBuff = resourceFactory.CreateSimpleVertexBuffer(m_device, triangle);
-	if (!triangleBuff)
-	{
-		return false;
-	}
+	std::wstring pathToFile = L"Data\\Textures\\YaoMingMeme.jpg";
+	//std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	//std::wstring wideFilename = converter.from_bytes(mesh.MeshMaterial.name + ".jpg");
+	//pathToFile += wideFilename;
 
-	m_vertexBuffer.push_back(std::move(triangleBuff));
-
-	if (!InitializeTexture())
-	{
-		return false;
-	}
+	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_ObjTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to OBJ texture.");
 
 	return true;
 }
