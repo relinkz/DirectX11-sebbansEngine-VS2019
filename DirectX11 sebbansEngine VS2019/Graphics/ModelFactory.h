@@ -4,5 +4,5 @@
 class ModelFactory
 {
 public:
-	std::unique_ptr<IModel> CreateQuadModel(Microsoft::WRL::ComPtr<ID3D11Device>& device);
+	std::unique_ptr<IModel> CreateQuadModel();
 };

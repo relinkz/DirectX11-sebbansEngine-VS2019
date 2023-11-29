@@ -4,10 +4,10 @@
 using namespace std;
 using namespace Microsoft::WRL;
 
-unique_ptr<IModel> ModelFactory::CreateQuadModel(ComPtr<ID3D11Device>& device)
+unique_ptr<IModel> ModelFactory::CreateQuadModel()
 {
 	auto object = std::make_unique<QuadModel>();
-	object->Initialize(device);
+	object->Initialize();
 
-	return object;
+	return move(object);
 }

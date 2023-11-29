@@ -2,9 +2,9 @@
 #include "ShaderFactory.h"
 #include "ResourceBufferFactory.h"
 #include "AdapterReader.h"
-#include "../OBJ_Loader.h"
 #include <locale>
 #include <codecvt>
+#include "ModelFactory.h"
 
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
@@ -330,40 +330,11 @@ bool Graphics::InitializeShaders()
 
 bool Graphics::InitializeScene()
 {
-	objl::Loader loader;
-	bool loadout = loader.LoadFile("./Data/ObjFiles/QuadObj.obj");
+	auto modelFactory = ModelFactory();
+	auto model = modelFactory.CreateQuadModel();
 
-	for (int meshId = 0; meshId < loader.LoadedMeshes.size(); meshId++)
-	{
-		objl::Mesh mesh = loader.LoadedMeshes[meshId];
-		std::string test = mesh.MeshMaterial.name;
-
-		std::vector<Vertex> obj = std::vector<Vertex>(mesh.Vertices.size());
-
-		for (size_t i = 0; i < mesh.Vertices.size(); i++)
-		{
-			auto pos = mesh.Vertices[i].Position;
-			obj.at(i).m_pos = DirectX::XMFLOAT3(pos.X, pos.Y, pos.Z);
-			auto uvs = mesh.Vertices[i].TextureCoordinate;
-			obj.at(i).m_texCoord = DirectX::XMFLOAT2(uvs.X, uvs.Y);
-		}
-
-		std::vector<Vertex> nonIndex = std::vector<Vertex>(mesh.Indices.size());
-		for (size_t i = 0; i < mesh.Indices.size(); i++)
-		{
-			nonIndex.at(i) = obj.at(mesh.Indices[i]);
-		}
-
-		ResourceBufferFactory resourceFactory = ResourceBufferFactory();
-		auto triangleBuff = resourceFactory.CreateSimpleVertexBuffer(m_device, nonIndex);
-		if (!triangleBuff)
-		{
-			return false;
-		}
-
-		m_vertexBuffer.push_back(std::move(triangleBuff));
-	}
-
+	auto vb = model->GetResourceVertexBuffer(m_device);
+	m_vertexBuffer.push_back(move(vb));
 
 	std::wstring pathToFile = L"Data\\Textures\\YaoMingMeme.jpg";
 	//std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
