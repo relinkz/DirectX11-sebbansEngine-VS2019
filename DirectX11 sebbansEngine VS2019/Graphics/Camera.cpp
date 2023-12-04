@@ -48,6 +48,24 @@ const XMFLOAT3& Camera::GetRotationFloat3() const
 	return m_rot;
 }
 
+const XMMATRIX& Camera::GetWorldMatrix() const
+{
+	static float translationOffset[3] = { 0.0f, 0.0f, -1.0f };
+	static float rotationOffset[3] = { 0.0f, 0.0f, 0.0f };
+
+	auto rotationMatrix = XMMatrixRotationRollPitchYaw(rotationOffset[0], rotationOffset[1], rotationOffset[2]);
+	auto scaleMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	auto translationMatrix = XMMatrixTranslation(translationOffset[0], translationOffset[1], translationOffset[2]);
+
+	return scaleMatrix * rotationMatrix * translationMatrix;
+}
+
+const XMMATRIX& Camera::GetWorldViewProjectionMatrix() const
+{
+	auto worldMatrix = GetWorldMatrix();
+	return XMMatrixTranspose(worldMatrix * m_viewMatrix * m_projectionMatrix);
+}
+
 void Camera::SetPosition(const XMVECTOR& pos)
 {
 	XMStoreFloat3(&m_pos, pos);

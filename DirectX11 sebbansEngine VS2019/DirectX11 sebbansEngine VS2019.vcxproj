@@ -168,7 +168,7 @@
     <ClCompile Include="Graphics\ModelFactory.cpp" />
     <ClCompile Include="Mouse\Mouse.cpp" />
     <ClCompile Include="Mouse\MouseEvent.cpp" />
-    <ClCompile Include="Graphics\QuadModel.cpp" />
+    <ClCompile Include="Graphics\Models.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
     <ClCompile Include="Graphics\Shaders.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -204,7 +204,7 @@
     <ClInclude Include="Mouse\Mouse.h" />
     <ClInclude Include="Mouse\MouseEvent.h" />
     <ClInclude Include="OBJ_Loader.h" />
-    <ClInclude Include="Graphics\QuadModel.h" />
+    <ClInclude Include="Graphics\Models.h" />
     <ClInclude Include="RenderWindow.h" />
     <ClInclude Include="Graphics\Shaders.h" />
     <ClInclude Include="Timer.h" />
@@ -238,6 +238,7 @@
   <ItemGroup>
     <Text Include="CubeObj.obj" />
     <Text Include="Data\ObjFiles\QuadObj.obj" />
+    <Text Include="Data\ObjFiles\QuadObj.mtl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\OneDrive - Sigma Technology\Dokument\tex_box_01_d.jpg" />

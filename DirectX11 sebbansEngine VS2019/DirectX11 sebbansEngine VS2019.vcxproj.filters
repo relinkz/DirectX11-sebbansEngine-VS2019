@@ -132,7 +132,7 @@
     <ClCompile Include="Graphics\ModelFactory.cpp">
       <Filter>Source Files\Graphics\Models</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\QuadModel.cpp">
+    <ClCompile Include="Graphics\Models.cpp">
       <Filter>Source Files\Graphics\Models</Filter>
     </ClCompile>
   </ItemGroup>
@@ -236,7 +236,7 @@
     <ClInclude Include="Graphics\ModelFactory.h">
       <Filter>Header Files\Graphics\Models</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\QuadModel.h">
+    <ClInclude Include="Graphics\Models.h">
       <Filter>Header Files\Graphics\Models</Filter>
     </ClInclude>
   </ItemGroup>
@@ -258,6 +258,7 @@
     <Text Include="CubeObj.obj">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="Data\ObjFiles\QuadObj.mtl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\OneDrive - Sigma Technology\Dokument\tex_box_01_d.jpg">

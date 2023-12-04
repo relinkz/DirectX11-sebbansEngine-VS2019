@@ -1,5 +1,5 @@
 #include "ModelFactory.h"
-#include "QuadModel.h"
+#include "Models.h"
 
 using namespace std;
 using namespace Microsoft::WRL;
@@ -10,4 +10,9 @@ unique_ptr<IModel> ModelFactory::CreateQuadModel()
 	object->Initialize();
 
 	return move(object);
+}
+
+std::unique_ptr<IModel> ModelFactory::CreateBox()
+{
+	return std::unique_ptr<IModel>();
 }
