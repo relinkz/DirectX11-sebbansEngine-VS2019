@@ -60,9 +60,11 @@ void Graphics::RenderFrame() const
 
 	m_deviceContext->IASetInputLayout(m_vertexShader->GetInputLayout());
 	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	
 	m_deviceContext->VSSetShader(m_vertexShader->GetShader(), NULL, 0);
 	m_deviceContext->PSSetShader(m_pixelShader->GetShader(), NULL, 0);
 	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
+	
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 	m_deviceContext->OMSetBlendState(m_blendState.Get(), NULL, 0xFFFFFFFF);
 
@@ -70,45 +72,34 @@ void Graphics::RenderFrame() const
 	static float objectRotX = 0.0f;
 	static float objectRotY = 0.0f;
 	static float objectRotZ = 0.0f;
-	{ // pavement
-		// Model to world matrix
-		static float translationOffset[3] = { 0.0f, 0.0f, -1.0f };
-		static float rotationOffset[3] = { 0.0f, 0.0f, 0.0f };
-
-		auto rotationMatrix = XMMatrixRotationRollPitchYaw(rotationOffset[0], rotationOffset[1], rotationOffset[2]);
-		auto scaleMatrix = XMMatrixScaling(1.0f, 1.0f, 1.0f);
-		auto translationMatrix = XMMatrixTranslation(translationOffset[0], translationOffset[1], translationOffset[2]);
-		DirectX::XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
-
-		CB_VS_vertexShader cData;
-		cData.m_matrix = worldMatrix * gameCamera->GetViewMatrix() * gameCamera->GetProjectionMatrix();
-		cData.m_matrix = DirectX::XMMatrixTranspose(cData.m_matrix);
-
+	
+	{
 		DirectX::XMFLOAT3 objRot = { objectRotX, objectRotY, objectRotZ };
-		m_modelsInScene.at(0)->SetRotation(objRot);
-		CB_VS_vertexShader cWorldMatrix;
-		cWorldMatrix.m_matrix = m_modelsInScene.at(0)->GetWorldMatrix();
-		cWorldMatrix.m_matrix = DirectX::XMMatrixTranspose(cWorldMatrix.m_matrix);
+
+		UpdateCameraCB();
+		UpdateModelCB(objRot);
 
 		CB_PS_pixelShader cPsData;
 		cPsData.alpha = alpha;
 
-		UpdateDynamicVsConstantBuffer(0, cData);
-		UpdateDynamicVsConstantBuffer(1, cWorldMatrix);
 		UpdateDynamicPsConstantBuffer(0, cPsData);
 
+		// to render an object.
+		// i need "object world matrix cb in vertex shader"
+		// i need "Local verticies"
+		// i need "I need objTexture in ps shader"
 		for (size_t i = 0; i < m_vertexBuffer.size(); i++)
 		{
 			UINT offset = 0;
 			UINT stride = m_vertexBuffer.at(i)->GetStride();
 
-			m_deviceContext->PSSetShaderResources(0, 1, m_ObjTexture.GetAddressOf());
 			m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 			
-			m_deviceContext->RSSetState(m_rasterizerStateCullFront.Get());
-			m_deviceContext->Draw(m_vertexBuffer.at(i)->GetNrOfVerticies(), 0);
+			m_deviceContext->PSSetShaderResources(0, 1, m_ObjTexture.GetAddressOf());
 			
+			m_deviceContext->RSSetState(m_rasterizerStateCullFront.Get());
 			m_deviceContext->RSSetState(m_rasterizerState.Get());
+
 			m_deviceContext->Draw(m_vertexBuffer.at(i)->GetNrOfVerticies(), 0);
 		}
 	}
@@ -458,26 +449,6 @@ bool Graphics::InitializeSamplerStates()
 	return true;
 }
 
-bool Graphics::InitializeTexture()
-{
-	/*
-	* need CoInitialize to be called before working, spritefont might be the one calling according to internet.
-	*/
-	std::wstring pathToFile = L"Data\\Textures\\Grass Seamless Texture.jpg";
-	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_grassTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to grass Texture.");
-
-	pathToFile = L"Data\\Textures\\blue.jpg";
-	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_blueTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to blue Texture.");
-
-	pathToFile = L"Data\\Textures\\Bricks Seamless Texture.jpg";
-	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_pavementTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to Pavement Texture.");
-
-	return true;
-}
-
 bool Graphics::InitializeConstantBuffers()
 {
 	auto resourceFactory = ResourceBufferFactory();
@@ -562,4 +533,23 @@ void Graphics::DestroyImGui() const
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+}
+
+void Graphics::UpdateCameraCB() const
+{
+	CB_VS_vertexShader cCameraMatrix;
+	cCameraMatrix.m_matrix = gameCamera->GetWorldViewProjectionMatrix();
+
+	UpdateDynamicVsConstantBuffer(0, cCameraMatrix);
+}
+
+void Graphics::UpdateModelCB(const DirectX::XMFLOAT3& rot) const
+{
+	m_modelsInScene.at(0)->SetRotation(rot);
+	CB_VS_vertexShader cWorldMatrix;
+
+	cWorldMatrix.m_matrix = m_modelsInScene.at(0)->GetWorldMatrix();
+	cWorldMatrix.m_matrix = DirectX::XMMatrixTranspose(cWorldMatrix.m_matrix);
+
+	UpdateDynamicVsConstantBuffer(1, cWorldMatrix);
 }
