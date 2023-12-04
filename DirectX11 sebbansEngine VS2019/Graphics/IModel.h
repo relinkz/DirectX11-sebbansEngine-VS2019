@@ -2,8 +2,6 @@
 #include "IResourceBuffer.h"
 #include <DirectXMath.h>
 #include <memory>
-#include <string>
-
 class IModel
 {
 public:
@@ -14,5 +12,4 @@ public:
 
 	virtual DirectX::XMMATRIX GetWorldMatrix() const = 0;
 	virtual std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device) = 0;
-	virtual std::vector<std::wstring> GetDiffuseMaps() const = 0;
 };

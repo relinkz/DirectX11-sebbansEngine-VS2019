@@ -35,15 +35,13 @@ private:
 	bool InitializeBlendState();
 	bool InitializeFonts();
 	bool InitializeSamplerStates();
+	bool InitializeTexture();
 	bool InitializeConstantBuffers();
 
 	bool UpdateDynamicVsConstantBuffer(const size_t index, CB_VS_vertexShader newData) const;
 	bool UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelShader newData) const;
 	void InitializeImGui(HWND hwnd) const;
 	void DestroyImGui() const;
-
-	void UpdateCameraCB() const;
-	void UpdateModelCB(const DirectX::XMFLOAT3& rot) const;
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
