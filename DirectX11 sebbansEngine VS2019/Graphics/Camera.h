@@ -16,6 +16,8 @@ public:
 	const XMFLOAT3& GetPositionFloat3() const;
 	const XMVECTOR& GetRotationVector() const;
 	const XMFLOAT3& GetRotationFloat3() const;
+	const XMMATRIX& GetWorldMatrix() const;
+	const XMMATRIX& GetWorldViewProjectionMatrix() const;
 
 	void SetPosition(const XMVECTOR& pos);
 	void SetPosition(const float x, const float y, const float z);
