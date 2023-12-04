@@ -2,8 +2,6 @@
 #include "ShaderFactory.h"
 #include "ResourceBufferFactory.h"
 #include "AdapterReader.h"
-#include <locale>
-#include <codecvt>
 #include "ModelFactory.h"
 
 
@@ -345,15 +343,11 @@ bool Graphics::InitializeScene()
 {
 	auto modelFactory = ModelFactory();
 	auto model = modelFactory.CreateQuadModel();
+	std::wstring pathToFile = model->GetDiffuseMaps().at(0);
 
 	auto vb = model->GetResourceVertexBuffer(m_device);
 	m_vertexBuffer.push_back(move(vb));
 	m_modelsInScene.emplace_back(move(model));
-
-	std::wstring pathToFile = L"Data\\Textures\\YaoMingMeme.jpg";
-	//std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-	//std::wstring wideFilename = converter.from_bytes(mesh.MeshMaterial.name + ".jpg");
-	//pathToFile += wideFilename;
 
 	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_ObjTexture.GetAddressOf());
 	COM_ERROR_IF_FAILED(hr, "Failed to OBJ texture.");
