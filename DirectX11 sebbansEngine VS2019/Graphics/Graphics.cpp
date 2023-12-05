@@ -4,6 +4,11 @@
 #include "AdapterReader.h"
 #include "ModelFactory.h"
 
+static float s_focusObjAlpha = 1.0f;
+static float s_focusObjRotX = 0.0f;
+static float s_focusObjRotY = 0.0f;
+static float s_focusObjRotZ = 0.0f;
+
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 {
@@ -54,91 +59,11 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 
 void Graphics::RenderFrame() const
 {
-	float bgColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), bgColor);
-	m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+	PreparePipeline();
 
-	m_deviceContext->IASetInputLayout(m_vertexShader->GetInputLayout());
-	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
-	m_deviceContext->VSSetShader(m_vertexShader->GetShader(), NULL, 0);
-	m_deviceContext->PSSetShader(m_pixelShader->GetShader(), NULL, 0);
-	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
-	
-	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
-	m_deviceContext->OMSetBlendState(m_blendState.Get(), NULL, 0xFFFFFFFF);
+	StartRender();
 
-	static float alpha = 1.0f;
-	static float objectRotX = 0.0f;
-	static float objectRotY = 0.0f;
-	static float objectRotZ = 0.0f;
-	
-	{
-		DirectX::XMFLOAT3 objRot = { objectRotX, objectRotY, objectRotZ };
-
-		UpdateCameraCB();
-		UpdateModelCB(objRot);
-
-		CB_PS_pixelShader cPsData;
-		cPsData.alpha = alpha;
-
-		UpdateDynamicPsConstantBuffer(0, cPsData);
-
-		// to render an object.
-		// i need "object world matrix cb in vertex shader"
-		// i need "Local verticies"
-		// i need "I need objTexture in ps shader"
-		for (size_t i = 0; i < m_vertexBuffer.size(); i++)
-		{
-			UINT offset = 0;
-			UINT stride = m_vertexBuffer.at(i)->GetStride();
-
-			m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
-			
-			m_deviceContext->PSSetShaderResources(0, 1, m_ObjTexture.GetAddressOf());
-			
-			m_deviceContext->RSSetState(m_rasterizerStateCullFront.Get());
-			m_deviceContext->RSSetState(m_rasterizerState.Get());
-
-			m_deviceContext->Draw(m_vertexBuffer.at(i)->GetNrOfVerticies(), 0);
-		}
-	}
-
-
-	// Draw text
-	static unsigned int fpsCounter = 0;
-	static std::string fpsString = "FPS: 0";
-	fpsCounter++;
-	constexpr float secondInMiliSec = 1000.0f;
-	if (m_fpsTimer->GetMilisecondsElapsed() > secondInMiliSec)
-	{
-		fpsString = "FPS: " + std::to_string(fpsCounter);
-		fpsCounter = 0;
-		m_fpsTimer->Restart();
-	}
-
-	m_spriteBatch->Begin();
-	m_spriteFont->DrawString(m_spriteBatch.get(), helpers::strings::StringToWide(fpsString).c_str(), DirectX::XMFLOAT2(0,0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f,1.0f));
-	m_spriteBatch->End();
-
-	// start the imgui frame
-	ImGui_ImplDX11_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-
-	static unsigned int counter = 0;
-
-	// create test window
-	ImGui::Begin("Object transform");
-	ImGui::DragFloat("Alpha:", &alpha, 0.01f, 0, 1.0f);
-	ImGui::DragFloat("Rotation X:", &objectRotX, 0.01f, 0, 2.0f * DirectX::XM_PI);
-	ImGui::DragFloat("Rotation Y:", &objectRotY, 0.01f, 0, 2.0f * DirectX::XM_PI);
-	ImGui::DragFloat("Rotation Z:", &objectRotZ, 0.01f, 0, 2.0f * DirectX::XM_PI);
-	ImGui::End();
-
-	ImGui::Render();
-
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	RenderImGui();
 
 	m_swapchain->Present(0, NULL);
 }
@@ -471,7 +396,6 @@ bool Graphics::InitializeConstantBuffers()
 		return false;
 	}
 
-
 	m_vsConstantBuffers.push_back(std::move(simpleConstantBuffer));
 	m_vsConstantBuffers.push_back(std::move(simpleCMatrixVsBuffer));
 	m_psConstantBuffers.push_back(std::move(simplePsConstantBuffer));
@@ -543,13 +467,99 @@ void Graphics::UpdateCameraCB() const
 	UpdateDynamicVsConstantBuffer(0, cCameraMatrix);
 }
 
-void Graphics::UpdateModelCB(const DirectX::XMFLOAT3& rot) const
+void Graphics::UpdateModelCB(const int modelIndex, const DirectX::XMFLOAT3& rot) const
 {
 	m_modelsInScene.at(0)->SetRotation(rot);
 	CB_VS_vertexShader cWorldMatrix;
 
-	cWorldMatrix.m_matrix = m_modelsInScene.at(0)->GetWorldMatrix();
+	cWorldMatrix.m_matrix = m_modelsInScene.at(modelIndex)->GetWorldMatrix();
 	cWorldMatrix.m_matrix = DirectX::XMMatrixTranspose(cWorldMatrix.m_matrix);
 
 	UpdateDynamicVsConstantBuffer(1, cWorldMatrix);
+}
+
+void Graphics::PreparePipeline() const
+{
+	float bgColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), bgColor);
+	m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+
+	m_deviceContext->IASetInputLayout(m_vertexShader->GetInputLayout());
+	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	m_deviceContext->VSSetShader(m_vertexShader->GetShader(), NULL, 0);
+	m_deviceContext->PSSetShader(m_pixelShader->GetShader(), NULL, 0);
+	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
+
+	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+	m_deviceContext->OMSetBlendState(m_blendState.Get(), NULL, 0xFFFFFFFF);
+}
+
+void Graphics::RenderImGui() const
+{
+	// Draw text
+	static unsigned int fpsCounter = 0;
+	static std::string fpsString = "FPS: 0";
+	fpsCounter++;
+	constexpr float secondInMiliSec = 1000.0f;
+	if (m_fpsTimer->GetMilisecondsElapsed() > secondInMiliSec)
+	{
+		fpsString = "FPS: " + std::to_string(fpsCounter);
+		fpsCounter = 0;
+		m_fpsTimer->Restart();
+	}
+
+	m_spriteBatch->Begin();
+	m_spriteFont->DrawString(m_spriteBatch.get(), helpers::strings::StringToWide(fpsString).c_str(), DirectX::XMFLOAT2(0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f));
+	m_spriteBatch->End();
+
+	// start the imgui frame
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// create test window
+	ImGui::Begin("Object transform");
+	ImGui::DragFloat("Alpha:", &s_focusObjAlpha, 0.01f, 0, 1.0f);
+	ImGui::DragFloat("Rotation X:", &s_focusObjRotX, 0.01f, 0, 2.0f * DirectX::XM_PI);
+	ImGui::DragFloat("Rotation Y:", &s_focusObjRotY, 0.01f, 0, 2.0f * DirectX::XM_PI);
+	ImGui::DragFloat("Rotation Z:", &s_focusObjRotZ, 0.01f, 0, 2.0f * DirectX::XM_PI);
+	ImGui::End();
+
+	ImGui::Render();
+
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+void Graphics::StartRender() const
+{
+	UpdateCameraCB();
+
+	CB_PS_pixelShader cPsData;
+	cPsData.alpha = s_focusObjAlpha;
+
+	UpdateDynamicPsConstantBuffer(0, cPsData);
+
+	// to render an object.
+	// i need "object world matrix cb in vertex shader"
+	// i need "Local verticies"
+	// i need "I need objTexture in ps shader"
+
+	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
+	{
+		UINT offset = 0;
+		UINT stride = m_vertexBuffer.at(i)->GetStride();
+
+		DirectX::XMFLOAT3 objRot = { s_focusObjRotX, s_focusObjRotY, s_focusObjRotZ };
+		UpdateModelCB(i, objRot);
+
+		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
+
+		m_deviceContext->PSSetShaderResources(0, 1, m_ObjTexture.GetAddressOf());
+
+		m_deviceContext->RSSetState(m_rasterizerStateCullFront.Get());
+		m_deviceContext->RSSetState(m_rasterizerState.Get());
+
+		m_deviceContext->Draw(m_vertexBuffer.at(i)->GetNrOfVerticies(), 0);
+	}
 }

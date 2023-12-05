@@ -43,7 +43,11 @@ private:
 	void DestroyImGui() const;
 
 	void UpdateCameraCB() const;
-	void UpdateModelCB(const DirectX::XMFLOAT3& rot) const;
+	void UpdateModelCB(const int modelIndex, const DirectX::XMFLOAT3& rot) const;
+
+	void PreparePipeline() const;
+	void RenderImGui() const;
+	void StartRender() const;
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
