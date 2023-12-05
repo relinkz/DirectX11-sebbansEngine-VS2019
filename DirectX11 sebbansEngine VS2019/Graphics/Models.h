@@ -20,6 +20,7 @@ protected:
 	DirectX::XMMATRIX GetWorldMatrix() const override;
 	std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>&) override;
 	virtual std::vector<std::wstring> GetDiffuseMaps() const override;
+	void ReadObjFile(const std::string& file);
 };
 
 class QuadModel : public Model
