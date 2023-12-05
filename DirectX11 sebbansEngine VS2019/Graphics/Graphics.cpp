@@ -258,7 +258,7 @@ bool Graphics::InitializeShaders()
 bool Graphics::InitializeScene()
 {
 	auto modelFactory = ModelFactory();
-	auto model = modelFactory.CreateQuadModel();
+	auto model = modelFactory.CreateBox();
 	std::wstring pathToFile = model->GetDiffuseMaps().at(0);
 
 	auto vb = model->GetResourceVertexBuffer(m_device);

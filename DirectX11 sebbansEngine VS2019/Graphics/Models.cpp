@@ -88,9 +88,31 @@ void QuadModel::Initialize()
 	{
 		m_vertecies.at(i) = obj.at(mesh.Indices[i]);
 	}
-
 }
 
 void Box::Initialize()
 {
+	ResetTransformation();
+
+	objl::Loader loader;
+	bool loadout = loader.LoadFile("./Data/ObjFiles/box 01.obj");
+
+	objl::Mesh mesh = loader.LoadedMeshes[0];
+	m_textureMapD.emplace_back(mesh.MeshMaterial.map_Kd);
+
+	vector<Vertex> obj = std::vector<Vertex>(mesh.Vertices.size());
+
+	for (size_t i = 0; i < mesh.Vertices.size(); i++)
+	{
+		auto pos = mesh.Vertices[i].Position;
+		obj.at(i).m_pos = DirectX::XMFLOAT3(pos.X, pos.Y, pos.Z);
+		auto uvs = mesh.Vertices[i].TextureCoordinate;
+		obj.at(i).m_texCoord = DirectX::XMFLOAT2(uvs.X, uvs.Y);
+	}
+
+	m_vertecies = vector<Vertex>(mesh.Indices.size());
+	for (size_t i = 0; i < mesh.Indices.size(); i++)
+	{
+		m_vertecies.at(i) = obj.at(mesh.Indices[i]);
+	}
 }

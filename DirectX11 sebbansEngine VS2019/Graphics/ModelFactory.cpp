@@ -14,5 +14,8 @@ unique_ptr<IModel> ModelFactory::CreateQuadModel()
 
 std::unique_ptr<IModel> ModelFactory::CreateBox()
 {
-	return std::unique_ptr<IModel>();
+	auto object = std::make_unique<Box>();
+	object->Initialize();
+	
+	return move(object);
 }
