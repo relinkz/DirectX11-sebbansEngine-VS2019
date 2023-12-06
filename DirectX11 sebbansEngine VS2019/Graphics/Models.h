@@ -16,6 +16,7 @@ protected:
 	void SetRotation(const DirectX::XMFLOAT3&) override;
 	void SetScale(const DirectX::XMFLOAT3&) override;
 	void ResetTransformation();
+	void AddOffsetToLocalVerticies(const DirectX::XMFLOAT3& offset);
 
 	DirectX::XMMATRIX GetWorldMatrix() const override;
 	std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>&) override;

@@ -28,6 +28,16 @@ void Model::ResetTransformation()
 	m_scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
 }
 
+void Model::AddOffsetToLocalVerticies(const DirectX::XMFLOAT3& offset)
+{
+	for (size_t i = 0; i < m_vertecies.size(); i++)
+	{
+		m_vertecies.at(i).m_pos.x += offset.x;
+		m_vertecies.at(i).m_pos.y += offset.y;
+		m_vertecies.at(i).m_pos.z += offset.z;
+	}
+}
+
 XMMATRIX Model::GetWorldMatrix() const
 {
 	auto rotationMatrix = XMMatrixRotationRollPitchYaw(m_rot.x, m_rot.y, m_rot.z);
@@ -100,4 +110,7 @@ void Box::Initialize()
 	ResetTransformation();
 
 	ReadObjFile("./Data/ObjFiles/box 01.obj");
+	
+	const auto offset = DirectX::XMFLOAT3(0.0f, -0.5, 0.0f);
+	AddOffsetToLocalVerticies(offset);
 }
