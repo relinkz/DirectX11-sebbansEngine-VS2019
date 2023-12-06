@@ -407,9 +407,16 @@ bool Graphics::InitializeConstantBuffers()
 		return false;
 	}
 
+	auto materialPsConstantBuffer = resourceFactory.CreateMaterialPsConstantBuffer(m_device);
+	if (!materialPsConstantBuffer)
+	{
+		return false;
+	}
+
 	m_vsConstantBuffers.push_back(std::move(simpleConstantBuffer));
 	m_vsConstantBuffers.push_back(std::move(simpleCMatrixVsBuffer));
 	m_psConstantBuffers.push_back(std::move(simplePsConstantBuffer));
+	m_psConstantBuffers.push_back(std::move(materialPsConstantBuffer));
 
 	return true;
 }
@@ -433,7 +440,7 @@ bool Graphics::UpdateDynamicVsConstantBuffer(const size_t index, CB_VS_vertexSha
 	return false;
 }
 
-bool Graphics::UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelShader newData) const
+bool Graphics::UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelAlphaShader newData) const
 {
 	if (m_psConstantBuffers.size() < index)
 	{
@@ -445,11 +452,30 @@ bool Graphics::UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelShad
 	auto hr = m_deviceContext->Map(m_psConstantBuffers.at(index)->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResourcePs);
 	COM_ERROR_IF_FAILED(hr, "Failed to map ConstantBuffer.");
 
-	CopyMemory(mappedResourcePs.pData, &newData, sizeof(CB_PS_pixelShader));
-	m_deviceContext->Unmap(m_psConstantBuffers.at(index)->GetBuffer(), index);
+	CopyMemory(mappedResourcePs.pData, &newData, sizeof(CB_PS_pixelAlphaShader));
+	m_deviceContext->Unmap(m_psConstantBuffers.at(index)->GetBuffer(), 0);
 	m_deviceContext->PSSetConstantBuffers(0, 1, m_psConstantBuffers.at(index)->GetBufferAddress());
 
-	return false;
+	return true;
+}
+
+bool Graphics::UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelMaterialShader newData) const
+{
+	if (m_psConstantBuffers.size() < index)
+	{
+		errorlogger::Log("setDynamicPsConstantBuffer, index higher an vector size");
+		return false;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE mappedResourcePs;
+	auto hr = m_deviceContext->Map(m_psConstantBuffers.at(index)->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResourcePs);
+	COM_ERROR_IF_FAILED(hr, "Failed to map ConstantBuffer.");
+
+	CopyMemory(mappedResourcePs.pData, &newData, sizeof(CB_PS_pixelMaterialShader));
+	m_deviceContext->Unmap(m_psConstantBuffers.at(index)->GetBuffer(), 0);
+	m_deviceContext->PSSetConstantBuffers(1, 1, m_psConstantBuffers.at(index)->GetBufferAddress());
+
+	return true;
 }
 
 void Graphics::InitializeImGui(HWND hwnd) const
@@ -545,11 +571,18 @@ void Graphics::RenderImGui() const
 
 void Graphics::StartRender() const
 {
+	CB_PS_pixelMaterialShader cPsMatData;
+	cPsMatData.Ka = m_modelsInScene.at(0)->GetKa();
+	cPsMatData.Kd = m_modelsInScene.at(0)->GetKd();
+	cPsMatData.Ks = m_modelsInScene.at(0)->GetKs();
+	cPsMatData.Ns = m_modelsInScene.at(0)->GetNs();
+
+	UpdateDynamicPsConstantBuffer(1, cPsMatData);
+
 	UpdateCameraCB();
 
-	CB_PS_pixelShader cPsData;
+	CB_PS_pixelAlphaShader cPsData;
 	cPsData.alpha = s_focusObjAlpha;
-
 	UpdateDynamicPsConstantBuffer(0, cPsData);
 
 	// to render an object.

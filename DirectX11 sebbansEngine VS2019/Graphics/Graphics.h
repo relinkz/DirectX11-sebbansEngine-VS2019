@@ -38,7 +38,8 @@ private:
 	bool InitializeConstantBuffers();
 
 	bool UpdateDynamicVsConstantBuffer(const size_t index, CB_VS_vertexShader newData) const;
-	bool UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelShader newData) const;
+	bool UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelAlphaShader newData) const;
+	bool UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelMaterialShader newData) const;
 	void InitializeImGui(HWND hwnd) const;
 	void DestroyImGui() const;
 

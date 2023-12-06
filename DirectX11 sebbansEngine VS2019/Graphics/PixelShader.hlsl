@@ -5,17 +5,25 @@ struct PS_INPUT
 	float2 inTexCoord : TEXCOORD;
 };
 
-cbuffer pixelCBuff : register(b0)
-{
-	float alpha;
-};
-
 Texture2D diffuseMap : TEXTURE : register(t0);
 Texture2D normalMap : TEXTURE : register(t1);
 Texture2D occlusionMap : TEXTURE : register(t2);
 Texture2D specularMap : TEXTURE : register(t3);
 
 SamplerState objSamplerState : SAMPLER : register(s0);
+
+cbuffer pixelCBuff : register(b0)
+{
+	float alpha;
+};
+
+cbuffer materialCBuff : register(b1)
+{
+	float3 Ka;
+	float3 Kd;
+	float3 Ks;
+	float Ns;
+}
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
@@ -26,7 +34,7 @@ float4 main(PS_INPUT input) : SV_TARGET
 	// float3 specular = specularMap.Sample(objSamplerState, input.inTexCoord);
 	
 	// next I need lighting
-	float3 finalColor = diffuseColor;
+	float3 finalColor = diffuseColor * Kd;
 	
 	return float4(finalColor, alpha);
 }

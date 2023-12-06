@@ -52,3 +52,16 @@ std::unique_ptr<IResourceConstantBuffer> ResourceBufferFactory::CreateSimplePsCo
 
 	return std::move(constantBuffer);
 }
+
+std::unique_ptr<IResourceConstantBuffer> ResourceBufferFactory::CreateMaterialPsConstantBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device)
+{
+	std::unique_ptr<MaterialPsConstantBuffer> constantBuffer;
+	constantBuffer = std::make_unique<MaterialPsConstantBuffer>();
+
+	if (!constantBuffer->Initialize(device))
+	{
+		return nullptr;
+	}
+
+	return std::move(constantBuffer);
+}

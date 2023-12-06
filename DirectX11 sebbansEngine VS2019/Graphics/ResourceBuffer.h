@@ -51,3 +51,14 @@ public:
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
 };
+
+class MaterialPsConstantBuffer : public IResourceConstantBuffer
+{
+public:
+	bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device) override;
+	ID3D11Buffer** GetBufferAddress() override;
+	ID3D11Buffer* GetBuffer() override;
+
+private:
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
+};
