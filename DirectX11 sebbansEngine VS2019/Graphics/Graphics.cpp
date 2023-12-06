@@ -260,14 +260,24 @@ bool Graphics::InitializeScene()
 	auto modelFactory = ModelFactory();
 	auto model = modelFactory.CreateBox();
 
-	std::wstring pathToFile = model->GetDiffuseMaps().at(0);
+	std::wstring pathToDiffuseMap = model->GetDiffuseMaps().at(0);
+	std::wstring pathToNormalMap = model->GetNormalMaps().at(0);
+	std::wstring pathToOcclutionMap = model->GetOcclusionMaps().at(0);
+	std::wstring pathToSpecularMap = model->GetOcclusionMaps().at(0);
 
 	auto vb = model->GetResourceVertexBuffer(m_device);
 	m_vertexBuffer.push_back(move(vb));
 	m_modelsInScene.emplace_back(move(model));
 
-	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToFile.c_str(), nullptr, m_ObjTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to OBJ texture.");
+	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToDiffuseMap.c_str(), nullptr, m_diffuseTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load diffuse map.");
+	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToNormalMap.c_str(), nullptr, m_normalTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load normal map.");
+	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToOcclutionMap.c_str(), nullptr, m_occlusionTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load occlusion map.");
+	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToSpecularMap.c_str(), nullptr, m_specularTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load specular map.");
+
 
 	return true;
 }
@@ -564,7 +574,10 @@ void Graphics::StartRender() const
 
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 
-		m_deviceContext->PSSetShaderResources(0, 1, m_ObjTexture.GetAddressOf());
+		m_deviceContext->PSSetShaderResources(0, 1, m_diffuseTexture.GetAddressOf());
+		m_deviceContext->PSSetShaderResources(1, 1, m_normalTexture.GetAddressOf());
+		m_deviceContext->PSSetShaderResources(2, 1, m_occlusionTexture.GetAddressOf());
+		m_deviceContext->PSSetShaderResources(3, 1, m_specularTexture.GetAddressOf());
 
 		m_deviceContext->RSSetState(m_rasterizerStateCullFront.Get());
 		m_deviceContext->RSSetState(m_rasterizerState.Get());

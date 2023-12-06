@@ -61,25 +61,39 @@ unique_ptr<IResourceVertexBuffer> Model::GetResourceVertexBuffer(Microsoft::WRL:
 
 std::vector<std::wstring> Model::GetDiffuseMaps() const
 {
-	auto toRet = std::vector<std::wstring>(m_textureMapD.size());
+	auto toRet = std::vector<std::wstring>(m_diffuseMap.size());
 	
-	for (int i = 0; i < m_textureMapD.size(); i++)
+	for (int i = 0; i < m_diffuseMap.size(); i++)
 	{
 		std::wstringstream wss;
-		wss << "Data\\Textures\\" << m_textureMapD.at(i).c_str();
+		wss << "Data\\Textures\\" << m_diffuseMap.at(i).c_str();
 		toRet.at(i) = wss.str();
 	}
 
 	return toRet;
 }
 
+std::vector<std::wstring> Model::GetNormalMaps() const
+{
+	return m_normalMaps;
+}
+
+std::vector<std::wstring> Model::GetOcclusionMaps() const
+{
+	return m_occlusionMaps;
+}
+
+std::vector<std::wstring> Model::GetSpecularMaps() const
+{
+	return m_specularMaps;
+}
+
 void Model::ReadObjFile(const std::string& file)
 {
 	objl::Loader loader;
 	bool loadout = loader.LoadFile(file);
-
 	objl::Mesh mesh = loader.LoadedMeshes[0];
-	m_textureMapD.emplace_back(mesh.MeshMaterial.map_Kd);
+	m_diffuseMap.emplace_back(mesh.MeshMaterial.map_Kd);
 
 	vector<Vertex> obj = std::vector<Vertex>(mesh.Vertices.size());
 
@@ -110,6 +124,10 @@ void Box::Initialize()
 	ResetTransformation();
 
 	ReadObjFile("./Data/ObjFiles/box 01.obj");
+
+	m_normalMaps.emplace_back(L"Data\\Textures\\tex_box_01_n.jpg");
+	m_specularMaps.emplace_back(L"Data\\Textures\\tex_box_01_s.jpg");
+	m_occlusionMaps.emplace_back(L"Data\\Textures\\tex_box_01_occ.jpg");
 	
 	const auto offset = DirectX::XMFLOAT3(0.0f, -0.5, 0.0f);
 	AddOffsetToLocalVerticies(offset);

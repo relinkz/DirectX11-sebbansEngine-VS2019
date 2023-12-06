@@ -10,7 +10,11 @@ protected:
 	DirectX::XMFLOAT3 m_pos;
 	DirectX::XMMATRIX m_tMtx;
 	std::vector<Vertex> m_vertecies;
-	std::vector<std::string> m_textureMapD;
+
+	std::vector<std::string> m_diffuseMap;
+	std::vector<std::wstring> m_normalMaps;
+	std::vector<std::wstring> m_occlusionMaps;
+	std::vector<std::wstring> m_specularMaps;
 
 	void SetPosition(const DirectX::XMFLOAT3&) override;
 	void SetRotation(const DirectX::XMFLOAT3&) override;
@@ -20,7 +24,13 @@ protected:
 
 	DirectX::XMMATRIX GetWorldMatrix() const override;
 	std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>&) override;
+
 	virtual std::vector<std::wstring> GetDiffuseMaps() const override;
+	virtual std::vector<std::wstring> GetNormalMaps() const override;
+	virtual std::vector<std::wstring> GetOcclusionMaps() const override;
+	virtual std::vector<std::wstring> GetSpecularMaps() const override;
+
+
 	void ReadObjFile(const std::string& file);
 };
 
