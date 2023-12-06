@@ -5,10 +5,9 @@
 #include "ModelFactory.h"
 
 static float s_focusObjAlpha = 1.0f;
-static float s_focusObjRotX = 0.0f;
-static float s_focusObjRotY = 0.0f;
-static float s_focusObjRotZ = 0.0f;
 
+static float s_focusObjRot[3] = { 0.0f, 0.0f, 0.0f };
+static float s_focusObjTrans[3] = { 0.0f, 0.0f, 0.0f };
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 {
@@ -259,6 +258,7 @@ bool Graphics::InitializeScene()
 {
 	auto modelFactory = ModelFactory();
 	auto model = modelFactory.CreateBox();
+
 	std::wstring pathToFile = model->GetDiffuseMaps().at(0);
 
 	auto vb = model->GetResourceVertexBuffer(m_device);
@@ -467,9 +467,8 @@ void Graphics::UpdateCameraCB() const
 	UpdateDynamicVsConstantBuffer(0, cCameraMatrix);
 }
 
-void Graphics::UpdateModelCB(const int modelIndex, const DirectX::XMFLOAT3& rot) const
+void Graphics::UpdateModelCB(const int modelIndex) const
 {
-	m_modelsInScene.at(0)->SetRotation(rot);
 	CB_VS_vertexShader cWorldMatrix;
 
 	cWorldMatrix.m_matrix = m_modelsInScene.at(modelIndex)->GetWorldMatrix();
@@ -521,9 +520,9 @@ void Graphics::RenderImGui() const
 	// create test window
 	ImGui::Begin("Object transform");
 	ImGui::DragFloat("Alpha:", &s_focusObjAlpha, 0.01f, 0, 1.0f);
-	ImGui::DragFloat("Rotation X:", &s_focusObjRotX, 0.01f, 0, 2.0f * DirectX::XM_PI);
-	ImGui::DragFloat("Rotation Y:", &s_focusObjRotY, 0.01f, 0, 2.0f * DirectX::XM_PI);
-	ImGui::DragFloat("Rotation Z:", &s_focusObjRotZ, 0.01f, 0, 2.0f * DirectX::XM_PI);
+
+	ImGui::InputFloat3("Rotation", s_focusObjRot);
+	ImGui::InputFloat3("Translation", s_focusObjTrans);
 	ImGui::End();
 
 	ImGui::Render();
@@ -550,8 +549,13 @@ void Graphics::StartRender() const
 		UINT offset = 0;
 		UINT stride = m_vertexBuffer.at(i)->GetStride();
 
-		DirectX::XMFLOAT3 objRot = { s_focusObjRotX, s_focusObjRotY, s_focusObjRotZ };
-		UpdateModelCB(i, objRot);
+		DirectX::XMFLOAT3 objRot		= { s_focusObjRot[0], s_focusObjRot[1], s_focusObjRot[2] };
+		DirectX::XMFLOAT3 objTrans	= { s_focusObjTrans[0], s_focusObjTrans[1], s_focusObjTrans[2]};
+
+		m_modelsInScene.at(0)->SetRotation(objRot);
+		m_modelsInScene.at(0)->SetPosition(objTrans);
+
+		UpdateModelCB(i);
 
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 

@@ -43,7 +43,7 @@ private:
 	void DestroyImGui() const;
 
 	void UpdateCameraCB() const;
-	void UpdateModelCB(const int modelIndex, const DirectX::XMFLOAT3& rot) const;
+	void UpdateModelCB(const int modelIndex) const;
 
 	void PreparePipeline() const;
 	void RenderImGui() const;
