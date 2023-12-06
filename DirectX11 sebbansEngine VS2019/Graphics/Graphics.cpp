@@ -8,6 +8,7 @@ static float s_focusObjAlpha = 1.0f;
 
 static float s_focusObjRot[3] = { 0.0f, 0.0f, 0.0f };
 static float s_focusObjTrans[3] = { 0.0f, 0.0f, 0.0f };
+static float s_focusObjScale[3] = { 1.0f, 1.0, 1.0f };
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 {
@@ -521,8 +522,10 @@ void Graphics::RenderImGui() const
 	ImGui::Begin("Object transform");
 	ImGui::DragFloat("Alpha:", &s_focusObjAlpha, 0.01f, 0, 1.0f);
 
-	ImGui::InputFloat3("Rotation", s_focusObjRot);
-	ImGui::InputFloat3("Translation", s_focusObjTrans);
+	ImGui::DragFloat3("Scale", s_focusObjScale, 0.01f, 0.1f, 100.0f);
+	ImGui::DragFloat3("Rotation", s_focusObjRot, 0.01f, -2.0f * DirectX::XM_PI, 2.0f * DirectX::XM_PI);
+	ImGui::DragFloat3("Translation", s_focusObjTrans, 0.01, -100.0f, 100.0f);
+
 	ImGui::End();
 
 	ImGui::Render();
@@ -549,9 +552,11 @@ void Graphics::StartRender() const
 		UINT offset = 0;
 		UINT stride = m_vertexBuffer.at(i)->GetStride();
 
+		DirectX::XMFLOAT3 objScale = { s_focusObjScale[0], s_focusObjScale[1], s_focusObjScale[2] };
 		DirectX::XMFLOAT3 objRot		= { s_focusObjRot[0], s_focusObjRot[1], s_focusObjRot[2] };
 		DirectX::XMFLOAT3 objTrans	= { s_focusObjTrans[0], s_focusObjTrans[1], s_focusObjTrans[2]};
 
+		m_modelsInScene.at(0)->SetScale(objScale);
 		m_modelsInScene.at(0)->SetRotation(objRot);
 		m_modelsInScene.at(0)->SetPosition(objTrans);
 
