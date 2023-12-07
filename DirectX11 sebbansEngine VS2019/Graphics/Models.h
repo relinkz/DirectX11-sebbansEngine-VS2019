@@ -28,6 +28,7 @@ protected:
 	void AddOffsetToLocalVerticies(const DirectX::XMFLOAT3& offset);
 
 	DirectX::XMMATRIX GetWorldMatrix() const override;
+	DirectX::XMMATRIX GetRotationMatrix() const override;
 	std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>&) override;
 
 	virtual std::vector<std::wstring> GetDiffuseMaps() const override;

@@ -502,6 +502,7 @@ void Graphics::UpdateCameraCB() const
 {
 	CB_VS_vertexShader cCameraMatrix;
 	cCameraMatrix.m_matrix = gameCamera->GetWorldViewProjectionMatrix();
+	cCameraMatrix.m_view = gameCamera->GetViewMatrix();
 
 	UpdateDynamicVsConstantBuffer(0, cCameraMatrix);
 }
@@ -512,6 +513,8 @@ void Graphics::UpdateModelCB(const int modelIndex) const
 
 	cWorldMatrix.m_matrix = m_modelsInScene.at(modelIndex)->GetWorldMatrix();
 	cWorldMatrix.m_matrix = DirectX::XMMatrixTranspose(cWorldMatrix.m_matrix);
+
+	cWorldMatrix.m_view = m_modelsInScene.at(modelIndex)->GetRotationMatrix();
 
 	UpdateDynamicVsConstantBuffer(1, cWorldMatrix);
 }
@@ -525,12 +528,12 @@ void Graphics::CreateGroundQuads()
 		for (int j = 0; j < 2; j++)
 		{
 			auto ground = modelFactory.CreateQuadModel();
-			ground->SetPosition(DirectX::XMFLOAT3(i * 2.0f * 5.0f + (-5.0f), -0.6f, j * 2.0f * 5.0f + (-4.0f)));
-			ground->SetScale(DirectX::XMFLOAT3(5.0f, 5.0f, 0.0f));
 			ground->SetRotation(DirectX::XMFLOAT3(DirectX::XM_PIDIV2, 0.0f, 0.0f));
+			ground->SetPosition(DirectX::XMFLOAT3(0.0f, -0.6f, j * 2.0f * 5.0f));
+			ground->SetScale(DirectX::XMFLOAT3(5.0f, 5.0f, 0.0f));
 
 			auto groundVb = ground->GetResourceVertexBuffer(m_device);
-			m_vertexBuffer.push_back(move(groundVb));
+			m_vertexBuffer.emplace_back(move(groundVb));
 			m_modelsInScene.emplace_back(move(ground));
 		}
 	}
@@ -632,12 +635,13 @@ void Graphics::StartRender() const
 		UINT offset = 0;
 		UINT stride = m_vertexBuffer.at(i)->GetStride();
 
-		UpdateModelCB(i);
 
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 
 		if (i == 0)
 		{
+			UpdateModelCB(i);
+			
 			CB_PS_pixelMaterialShader cPsMatData;
 			cPsMatData.Ka = m_modelsInScene.at(0)->GetKa();
 			cPsMatData.Kd = m_modelsInScene.at(0)->GetKd();
@@ -651,6 +655,8 @@ void Graphics::StartRender() const
 		}
 		else if (i == 1)
 		{
+			UpdateModelCB(i);
+
 			CB_PS_pixelMaterialShader cPsMatData;
 			cPsMatData.Ka = m_modelsInScene.at(1)->GetKa();
 			cPsMatData.Kd = m_modelsInScene.at(1)->GetKd();

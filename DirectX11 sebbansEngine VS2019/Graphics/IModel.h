@@ -13,6 +13,8 @@ public:
 	virtual void SetScale(const DirectX::XMFLOAT3&) = 0;
 
 	virtual DirectX::XMMATRIX GetWorldMatrix() const = 0;
+	virtual DirectX::XMMATRIX GetRotationMatrix() const = 0;
+
 	virtual std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device) = 0;
 	
 	// material stuff

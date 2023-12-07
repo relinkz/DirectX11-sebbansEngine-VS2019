@@ -47,6 +47,12 @@ XMMATRIX Model::GetWorldMatrix() const
 	return scaleMatrix * rotationMatrix * translationMatrix;
 }
 
+DirectX::XMMATRIX Model::GetRotationMatrix() const
+{
+	auto rotationMatrix = XMMatrixRotationRollPitchYaw(m_rot.x, m_rot.y, m_rot.z);
+	return rotationMatrix;
+}
+
 unique_ptr<IResourceVertexBuffer> Model::GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device)
 {
 	ResourceBufferFactory resourceFactory = ResourceBufferFactory();
