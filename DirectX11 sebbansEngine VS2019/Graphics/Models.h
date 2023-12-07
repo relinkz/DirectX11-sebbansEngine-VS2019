@@ -16,10 +16,10 @@ protected:
 	std::vector<std::wstring> m_occlusionMaps;
 	std::vector<std::wstring> m_specularMaps;
 
-	DirectX::XMFLOAT3 m_Ka;
-	DirectX::XMFLOAT3 m_Kd;
-	DirectX::XMFLOAT3 m_Ks;
-	float m_Ns;
+	DirectX::XMFLOAT4 m_Ka;
+	DirectX::XMFLOAT4 m_Kd;
+	DirectX::XMFLOAT4 m_Ks;
+	DirectX::XMFLOAT4 m_Ns;
 
 	void SetPosition(const DirectX::XMFLOAT3&) override;
 	void SetRotation(const DirectX::XMFLOAT3&) override;
@@ -35,10 +35,10 @@ protected:
 	virtual std::vector<std::wstring> GetOcclusionMaps() const override;
 	virtual std::vector<std::wstring> GetSpecularMaps() const override;
 
-	virtual DirectX::XMFLOAT3 GetKa() const override;
-	virtual DirectX::XMFLOAT3 GetKd() const override;
-	virtual DirectX::XMFLOAT3 GetKs() const override;
-	virtual float GetNs() const override;
+	virtual DirectX::XMFLOAT4 GetKa() const override;
+	virtual DirectX::XMFLOAT4 GetKd() const override;
+	virtual DirectX::XMFLOAT4 GetKs() const override;
+	virtual DirectX::XMFLOAT4 GetNs() const override;
 
 	void ReadObjFile(const std::string& file);
 };

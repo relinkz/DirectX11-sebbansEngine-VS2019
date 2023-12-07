@@ -88,22 +88,22 @@ std::vector<std::wstring> Model::GetSpecularMaps() const
 	return m_specularMaps;
 }
 
-DirectX::XMFLOAT3 Model::GetKa() const
+DirectX::XMFLOAT4 Model::GetKa() const
 {
 	return m_Ka;
 }
 
-DirectX::XMFLOAT3 Model::GetKd() const
+DirectX::XMFLOAT4 Model::GetKd() const
 {
 	return m_Kd;
 }
 
-DirectX::XMFLOAT3 Model::GetKs() const
+DirectX::XMFLOAT4 Model::GetKs() const
 {
 	return m_Ks;
 }
 
-float Model::GetNs() const
+DirectX::XMFLOAT4 Model::GetNs() const
 {
 	return m_Ns;
 }
@@ -115,10 +115,10 @@ void Model::ReadObjFile(const std::string& file)
 	objl::Mesh mesh = loader.LoadedMeshes[0];
 	m_diffuseMap.emplace_back(mesh.MeshMaterial.map_Kd);
 
-	m_Ka = DirectX::XMFLOAT3(mesh.MeshMaterial.Ka.X, mesh.MeshMaterial.Ka.Y, mesh.MeshMaterial.Ka.Z);
-	m_Kd = DirectX::XMFLOAT3(mesh.MeshMaterial.Kd.X, mesh.MeshMaterial.Kd.Y, mesh.MeshMaterial.Kd.Z);
-	m_Ks = DirectX::XMFLOAT3(mesh.MeshMaterial.Ks.X, mesh.MeshMaterial.Ks.Y, mesh.MeshMaterial.Ks.Z);
-	m_Ns = mesh.MeshMaterial.Ns;
+	m_Ka = DirectX::XMFLOAT4(mesh.MeshMaterial.Ka.X, mesh.MeshMaterial.Ka.Y, mesh.MeshMaterial.Ka.Z, 0.0f);
+	m_Kd = DirectX::XMFLOAT4(mesh.MeshMaterial.Kd.X, mesh.MeshMaterial.Kd.Y, mesh.MeshMaterial.Kd.Z, 0.0f);
+	m_Ks = DirectX::XMFLOAT4(mesh.MeshMaterial.Ks.X, mesh.MeshMaterial.Ks.Y, mesh.MeshMaterial.Ks.Z, 0.0f);
+	m_Ns = DirectX::XMFLOAT4(mesh.MeshMaterial.Ns, 0.0f, 0.0f, 0.0f);
 
 	vector<Vertex> obj = std::vector<Vertex>(mesh.Vertices.size());
 

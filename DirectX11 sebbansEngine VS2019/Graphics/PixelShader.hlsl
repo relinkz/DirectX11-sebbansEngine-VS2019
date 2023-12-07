@@ -19,10 +19,10 @@ cbuffer pixelCBuff : register(b0)
 
 cbuffer materialCBuff : register(b1)
 {
-	float3 Ka;
-	float3 Kd;
-	float3 Ks;
-	float Ns;
+	float4 Ka;
+	float4 Kd;
+	float4 Ks;
+	float4 Ns;
 }
 
 float4 main(PS_INPUT input) : SV_TARGET
@@ -34,7 +34,8 @@ float4 main(PS_INPUT input) : SV_TARGET
 	// float3 specular = specularMap.Sample(objSamplerState, input.inTexCoord);
 	
 	// next I need lighting
-	float3 finalColor = diffuseColor * Kd;
+	float3 Kd3 = float3(Kd[0], Kd[1], Kd[2]);
+	float3 finalColor = diffuseColor * Kd3;
 	
 	return float4(finalColor, alpha);
 }

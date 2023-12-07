@@ -472,7 +472,7 @@ bool Graphics::UpdateDynamicPsConstantBuffer(const size_t index, CB_PS_pixelMate
 	COM_ERROR_IF_FAILED(hr, "Failed to map ConstantBuffer.");
 
 	CopyMemory(mappedResourcePs.pData, &newData, sizeof(CB_PS_pixelMaterialShader));
-	m_deviceContext->Unmap(m_psConstantBuffers.at(index)->GetBuffer(), 0);
+	m_deviceContext->Unmap(m_psConstantBuffers.at(index)->GetBuffer(), index);
 	m_deviceContext->PSSetConstantBuffers(1, 1, m_psConstantBuffers.at(index)->GetBufferAddress());
 
 	return true;

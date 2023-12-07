@@ -22,8 +22,8 @@ struct CB_PS_pixelAlphaShader
 
 struct CB_PS_pixelMaterialShader
 {
-	DirectX::XMFLOAT3 Ka;
-	DirectX::XMFLOAT3 Kd;
-	DirectX::XMFLOAT3 Ks;
-	float Ns = 0.0f;
+	DirectX::XMFLOAT4 Ka;
+	DirectX::XMFLOAT4 Kd;
+	DirectX::XMFLOAT4 Ks;
+	DirectX::XMFLOAT4 Ns;
 };
