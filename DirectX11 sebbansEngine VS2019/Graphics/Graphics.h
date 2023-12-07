@@ -46,6 +46,8 @@ private:
 	void UpdateCameraCB() const;
 	void UpdateModelCB(const int modelIndex) const;
 
+	void CreateGroundQuads();
+
 	void PreparePipeline() const;
 	void RenderImGui() const;
 	void StartRender() const;

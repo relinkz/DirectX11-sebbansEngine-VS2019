@@ -278,6 +278,7 @@ bool Graphics::InitializeScene()
 	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToSpecularMap.c_str(), nullptr, m_specularTexture.GetAddressOf());
 	COM_ERROR_IF_FAILED(hr, "Failed to load specular map.");
 
+	CreateGroundQuads();
 
 	return true;
 }
@@ -514,6 +515,28 @@ void Graphics::UpdateModelCB(const int modelIndex) const
 	UpdateDynamicVsConstantBuffer(1, cWorldMatrix);
 }
 
+void Graphics::CreateGroundQuads()
+{
+	auto modelFactory = ModelFactory();
+
+	for (int i = 0; i < 6; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			auto ground = modelFactory.CreateQuadModel();
+			ground->SetPosition(DirectX::XMFLOAT3(i * 2.0f + (-5.0f), -0.6f, j * 2.0f + (-4.0f)));
+			ground->SetRotation(DirectX::XMFLOAT3(DirectX::XM_PIDIV2, 0.0f, 0.0f));
+
+			auto groundVb = ground->GetResourceVertexBuffer(m_device);
+			m_vertexBuffer.push_back(move(groundVb));
+			m_modelsInScene.emplace_back(move(ground));
+		}
+	}
+	std::wstring pathToDiffuseMap = L"Data\\Textures\\bricks_seamless_texture.jpg";
+	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToDiffuseMap.c_str(), nullptr, m_pavementTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load specular map.");
+}
+
 void Graphics::PreparePipeline() const
 {
 	float bgColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -607,7 +630,14 @@ void Graphics::StartRender() const
 
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 
-		m_deviceContext->PSSetShaderResources(0, 1, m_diffuseTexture.GetAddressOf());
+		if (i == 0)
+		{
+			m_deviceContext->PSSetShaderResources(0, 1, m_diffuseTexture.GetAddressOf());
+		}
+		else
+		{
+			m_deviceContext->PSSetShaderResources(0, 1, m_pavementTexture.GetAddressOf());
+		}
 		m_deviceContext->PSSetShaderResources(1, 1, m_normalTexture.GetAddressOf());
 		m_deviceContext->PSSetShaderResources(2, 1, m_occlusionTexture.GetAddressOf());
 		m_deviceContext->PSSetShaderResources(3, 1, m_specularTexture.GetAddressOf());
