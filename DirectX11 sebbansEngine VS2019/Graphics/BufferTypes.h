@@ -13,6 +13,7 @@ struct Vertex
 struct CB_VS_vertexShader
 {
 	DirectX::XMMATRIX m_matrix;
+	DirectX::XMMATRIX m_view;
 };
 
 struct CB_PS_pixelAlphaShader

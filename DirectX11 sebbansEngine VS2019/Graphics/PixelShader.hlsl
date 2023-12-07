@@ -1,7 +1,7 @@
 struct PS_INPUT
 {
 	float4 inPosition : SV_POSITION;
-  float3 inColor : COLOR;
+  float3 inNormal : COLOR;
 	float2 inTexCoord : TEXCOORD;
 };
 
@@ -25,41 +25,35 @@ cbuffer materialCBuff : register(b1)
 	float4 Ns;
 }
 
-float3 TiltVector(float3 originalVector, float angle)
-{
-	float cosTilt = cos(angle);
-	float sinTilt = sin(angle);
-	
-	float3 tiltVec;
-	tiltVec.x = originalVector.x * cosTilt - originalVector.z * sinTilt;
-	tiltVec.y = originalVector.y;
-	tiltVec.z = originalVector.z * sinTilt + originalVector.z * cosTilt;
-	
-	return normalize(tiltVec);
-
-}
-
 float4 main(PS_INPUT input) : SV_TARGET
 {
-	float3 lightDir = float3(alpha, 1.0, 0.0f);
+	float3 lightDir = float3(0.0f, 1.0f, 0.0f);
+	float3 viewDir = float3(0.0f, 0.0f, 1.0f);
 	float3 sunColor = float3(1.0f, 1.0, 1.0f);
-	sunColor *= 4;
+	
 	// use texture coordinates
 	float3 diffuseColor = diffuseMap.Sample(objSamplerState, input.inTexCoord);
-	float3 normal = normalMap.Sample(objSamplerState, input.inTexCoord);
+	float3 normalMapSample = normalMap.Sample(objSamplerState, input.inTexCoord);
 	// float3 occlusion = occlusionMap.Sample(objSamplerState, input.inTexCoord);
-	// float3 specular = specularMap.Sample(objSamplerState, input.inTexCoord);
+	float3 specularSample = specularMap.Sample(objSamplerState, input.inTexCoord);
 	
 	// next I need lighting
 	float3 Ka3 = float3(Ks[0], Ks[1], Ks[2]);
 	float3 Kd3 = float3(Kd[0], Kd[1], Kd[2]);
 	float3 Ks3 = float3(Ks[0], Ks[1], Ks[2]);
 	
-	float3 ambient = Ka * 0.3f;
-	float3 diffuseFactor = dot(normal, lightDir);
+	float3 ambient = Ka * 0.8f;
+	
+	float3 finalNormal = input.inNormal + normalMapSample;
+	float3 diffuseFactor = max(0.0f, dot(finalNormal, lightDir));
 	float3 diffuse = Kd3 * diffuseColor * sunColor * diffuseFactor;
 	
-	float3 finalColor = ambient + diffuse;
+	float shininess = 4.0f;
+	float3 reflectionDir = reflect(-lightDir, finalNormal);
+	float specularFactor = pow(max(0.0f, dot(reflectionDir, viewDir)), shininess);
+	float3 specular = Ks3 * specularSample * sunColor * specularFactor;
 	
-	return float4(input.inColor, 1);
+	float3 finalColor = ambient + diffuse + specular;
+	
+	return float4(finalColor, 1);
 }

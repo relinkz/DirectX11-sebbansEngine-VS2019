@@ -8,7 +8,7 @@ static float s_focusObjAlpha = 1.0f;
 
 static float s_focusObjRot[3] = { 0.0f, 0.0f, 0.0f };
 static float s_focusObjTrans[3] = { 0.0f, 0.0f, 0.0f };
-static float s_focusObjScale[3] = { 1.0f, 1.0, 1.0f };
+static float s_focusObjScale[3] = { 1.0f, 1.0f, 1.0f };
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 {
@@ -259,7 +259,7 @@ bool Graphics::InitializeScene()
 {
 	auto modelFactory = ModelFactory();
 	auto model = modelFactory.CreateBox();
-	model->SetScale(DirectX::XMFLOAT3(3.0f, 3.0f, 3.0f));
+	model->SetScale(DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
 
 	std::wstring pathToDiffuseMap = model->GetDiffuseMaps().at(0);
 	std::wstring pathToNormalMap = model->GetNormalMaps().at(0);
@@ -502,6 +502,7 @@ void Graphics::UpdateCameraCB() const
 {
 	CB_VS_vertexShader cCameraMatrix;
 	cCameraMatrix.m_matrix = gameCamera->GetWorldViewProjectionMatrix();
+	cCameraMatrix.m_view = gameCamera->GetViewMatrix();
 
 	UpdateDynamicVsConstantBuffer(0, cCameraMatrix);
 }
@@ -512,6 +513,8 @@ void Graphics::UpdateModelCB(const int modelIndex) const
 
 	cWorldMatrix.m_matrix = m_modelsInScene.at(modelIndex)->GetWorldMatrix();
 	cWorldMatrix.m_matrix = DirectX::XMMatrixTranspose(cWorldMatrix.m_matrix);
+	cWorldMatrix.m_view = m_modelsInScene.at(modelIndex)->GetRotationMatrix();
+	cWorldMatrix.m_view = DirectX::XMMatrixTranspose(cWorldMatrix.m_view);
 
 	UpdateDynamicVsConstantBuffer(1, cWorldMatrix);
 }
@@ -525,12 +528,12 @@ void Graphics::CreateGroundQuads()
 		for (int j = 0; j < 2; j++)
 		{
 			auto ground = modelFactory.CreateQuadModel();
-			ground->SetPosition(DirectX::XMFLOAT3(i * 2.0f * 5.0f + (-5.0f), -0.6f, j * 2.0f * 5.0f + (-4.0f)));
-			ground->SetScale(DirectX::XMFLOAT3(5.0f, 5.0f, 0.0f));
 			ground->SetRotation(DirectX::XMFLOAT3(DirectX::XM_PIDIV2, 0.0f, 0.0f));
+			ground->SetPosition(DirectX::XMFLOAT3(0.0f, -0.6f, j * 2.0f * 5.0f));
+			ground->SetScale(DirectX::XMFLOAT3(5.0f, 5.0f, 0.0f));
 
 			auto groundVb = ground->GetResourceVertexBuffer(m_device);
-			m_vertexBuffer.push_back(move(groundVb));
+			m_vertexBuffer.emplace_back(move(groundVb));
 			m_modelsInScene.emplace_back(move(ground));
 		}
 	}
@@ -604,6 +607,7 @@ void Graphics::StartRender() const
 	DirectX::XMFLOAT3 objRot = { s_focusObjRot[0], s_focusObjRot[1], s_focusObjRot[2] };
 	DirectX::XMFLOAT3 objTrans = { s_focusObjTrans[0], s_focusObjTrans[1], s_focusObjTrans[2] };
 
+
 	m_modelsInScene.at(0)->SetScale(objScale);
 	m_modelsInScene.at(0)->SetRotation(objRot);
 	m_modelsInScene.at(0)->SetPosition(objTrans);
@@ -632,9 +636,8 @@ void Graphics::StartRender() const
 		UINT offset = 0;
 		UINT stride = m_vertexBuffer.at(i)->GetStride();
 
-		UpdateModelCB(i);
-
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
+		UpdateModelCB(i);
 
 		if (i == 0)
 		{
