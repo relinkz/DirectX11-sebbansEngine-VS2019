@@ -65,9 +65,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerStateCullFront;
 	// The sampler-state interface holds a description for sampler state that you can bind to any shader stage of the pipeline for reference by texture sample operations.
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_grassTexture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pavementTexture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_blueTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_grassDiffuseTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_grassNormalTexture;
+
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_diffuseTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_normalTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_occlusionTexture;

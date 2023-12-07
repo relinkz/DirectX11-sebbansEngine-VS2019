@@ -259,6 +259,7 @@ bool Graphics::InitializeScene()
 {
 	auto modelFactory = ModelFactory();
 	auto model = modelFactory.CreateBox();
+	model->SetScale(DirectX::XMFLOAT3(3.0f, 3.0f, 3.0f));
 
 	std::wstring pathToDiffuseMap = model->GetDiffuseMaps().at(0);
 	std::wstring pathToNormalMap = model->GetNormalMaps().at(0);
@@ -519,12 +520,13 @@ void Graphics::CreateGroundQuads()
 {
 	auto modelFactory = ModelFactory();
 
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 2; i++)
 	{
-		for (int j = 0; j < 6; j++)
+		for (int j = 0; j < 2; j++)
 		{
 			auto ground = modelFactory.CreateQuadModel();
-			ground->SetPosition(DirectX::XMFLOAT3(i * 2.0f + (-5.0f), -0.6f, j * 2.0f + (-4.0f)));
+			ground->SetPosition(DirectX::XMFLOAT3(i * 2.0f * 5.0f + (-5.0f), -0.6f, j * 2.0f * 5.0f + (-4.0f)));
+			ground->SetScale(DirectX::XMFLOAT3(5.0f, 5.0f, 0.0f));
 			ground->SetRotation(DirectX::XMFLOAT3(DirectX::XM_PIDIV2, 0.0f, 0.0f));
 
 			auto groundVb = ground->GetResourceVertexBuffer(m_device);
@@ -532,9 +534,13 @@ void Graphics::CreateGroundQuads()
 			m_modelsInScene.emplace_back(move(ground));
 		}
 	}
-	std::wstring pathToDiffuseMap = L"Data\\Textures\\bricks_seamless_texture.jpg";
-	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToDiffuseMap.c_str(), nullptr, m_pavementTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to load specular map.");
+	std::wstring pathToDiffuseMap = L"Data\\Textures\\gravel_01_diffuse.jpg";
+	std::wstring pathToNormalMap = L"Data\\Textures\\gravel_01_normal.jpg";
+	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToDiffuseMap.c_str(), nullptr, m_grassDiffuseTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load Diffuse map.");
+  hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToNormalMap.c_str(), nullptr, m_grassNormalTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load normal map.");
+
 }
 
 void Graphics::PreparePipeline() const
@@ -594,6 +600,14 @@ void Graphics::RenderImGui() const
 
 void Graphics::StartRender() const
 {
+	DirectX::XMFLOAT3 objScale = { s_focusObjScale[0], s_focusObjScale[1], s_focusObjScale[2] };
+	DirectX::XMFLOAT3 objRot = { s_focusObjRot[0], s_focusObjRot[1], s_focusObjRot[2] };
+	DirectX::XMFLOAT3 objTrans = { s_focusObjTrans[0], s_focusObjTrans[1], s_focusObjTrans[2] };
+
+	m_modelsInScene.at(0)->SetScale(objScale);
+	m_modelsInScene.at(0)->SetRotation(objRot);
+	m_modelsInScene.at(0)->SetPosition(objTrans);
+
 	CB_PS_pixelMaterialShader cPsMatData;
 	cPsMatData.Ka = m_modelsInScene.at(0)->GetKa();
 	cPsMatData.Kd = m_modelsInScene.at(0)->GetKd();
@@ -618,27 +632,36 @@ void Graphics::StartRender() const
 		UINT offset = 0;
 		UINT stride = m_vertexBuffer.at(i)->GetStride();
 
-		DirectX::XMFLOAT3 objScale = { s_focusObjScale[0], s_focusObjScale[1], s_focusObjScale[2] };
-		DirectX::XMFLOAT3 objRot		= { s_focusObjRot[0], s_focusObjRot[1], s_focusObjRot[2] };
-		DirectX::XMFLOAT3 objTrans	= { s_focusObjTrans[0], s_focusObjTrans[1], s_focusObjTrans[2]};
-
-		m_modelsInScene.at(0)->SetScale(objScale);
-		m_modelsInScene.at(0)->SetRotation(objRot);
-		m_modelsInScene.at(0)->SetPosition(objTrans);
-
 		UpdateModelCB(i);
 
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
 
 		if (i == 0)
 		{
+			CB_PS_pixelMaterialShader cPsMatData;
+			cPsMatData.Ka = m_modelsInScene.at(0)->GetKa();
+			cPsMatData.Kd = m_modelsInScene.at(0)->GetKd();
+			cPsMatData.Ks = m_modelsInScene.at(0)->GetKs();
+			cPsMatData.Ns = m_modelsInScene.at(0)->GetNs();
+
+			UpdateDynamicPsConstantBuffer(1, cPsMatData);
+
 			m_deviceContext->PSSetShaderResources(0, 1, m_diffuseTexture.GetAddressOf());
+			m_deviceContext->PSSetShaderResources(1, 1, m_normalTexture.GetAddressOf());
 		}
-		else
+		else if (i == 1)
 		{
-			m_deviceContext->PSSetShaderResources(0, 1, m_pavementTexture.GetAddressOf());
+			CB_PS_pixelMaterialShader cPsMatData;
+			cPsMatData.Ka = m_modelsInScene.at(1)->GetKa();
+			cPsMatData.Kd = m_modelsInScene.at(1)->GetKd();
+			cPsMatData.Ks = m_modelsInScene.at(1)->GetKs();
+			cPsMatData.Ns = m_modelsInScene.at(1)->GetNs();
+
+			UpdateDynamicPsConstantBuffer(1, cPsMatData);
+
+			m_deviceContext->PSSetShaderResources(0, 1, m_grassDiffuseTexture.GetAddressOf());
+			m_deviceContext->PSSetShaderResources(1, 1, m_grassNormalTexture.GetAddressOf());
 		}
-		m_deviceContext->PSSetShaderResources(1, 1, m_normalTexture.GetAddressOf());
 		m_deviceContext->PSSetShaderResources(2, 1, m_occlusionTexture.GetAddressOf());
 		m_deviceContext->PSSetShaderResources(3, 1, m_specularTexture.GetAddressOf());
 
