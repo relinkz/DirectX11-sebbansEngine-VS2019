@@ -126,6 +126,10 @@ void Model::ReadObjFile(const std::string& file)
 	{
 		auto pos = mesh.Vertices[i].Position;
 		obj.at(i).m_pos = DirectX::XMFLOAT3(pos.X, pos.Y, pos.Z);
+
+		auto norm = mesh.Vertices[i].Normal;
+		obj.at(i).m_normal = DirectX::XMFLOAT3(norm.X, norm.Y, norm.Z);
+
 		auto uvs = mesh.Vertices[i].TextureCoordinate;
 		obj.at(i).m_texCoord = DirectX::XMFLOAT2(uvs.X, uvs.Y);
 	}

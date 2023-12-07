@@ -41,8 +41,7 @@ float3 TiltVector(float3 originalVector, float angle)
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
-	float3 lightDir = float3(0.0f, 1.0, 0.0f);
-	lightDir = TiltVector(lightDir, radians(10.0f));
+	float3 lightDir = float3(alpha, 1.0, 0.0f);
 	float3 sunColor = float3(1.0f, 1.0, 1.0f);
 	sunColor *= 4;
 	// use texture coordinates
@@ -57,10 +56,10 @@ float4 main(PS_INPUT input) : SV_TARGET
 	float3 Ks3 = float3(Ks[0], Ks[1], Ks[2]);
 	
 	float3 ambient = Ka * 0.3f;
-	float3 diffuseFactor = max(0.0f, dot(normal, lightDir));
+	float3 diffuseFactor = dot(normal, lightDir);
 	float3 diffuse = Kd3 * diffuseColor * sunColor * diffuseFactor;
 	
 	float3 finalColor = ambient + diffuse;
 	
-	return float4(diffuse, alpha);
+	return float4(input.inColor, 1);
 }
