@@ -10,6 +10,9 @@ static float s_focusObjRot[3] = { 0.0f, 0.0f, 0.0f };
 static float s_focusObjTrans[3] = { 0.0f, 0.0f, 0.0f };
 static float s_focusObjScale[3] = { 1.0f, 1.0f, 1.0f };
 
+static bool s_contRotate = true;
+static DirectX::XMFLOAT3 s_rotateVec = DirectX::XMFLOAT3(0.0f, 0.0f, DirectX::XM_PI/4.0f);
+
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 {
 	m_windowWidth = width;
@@ -43,7 +46,7 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 
 
 	gameCamera = std::make_unique<Camera>();
-	gameCamera->SetPosition(0.0f, 0.0f, -2.0f);
+	gameCamera->SetPosition(0.0f, 0.0f, -4.0f);
 
 	float rotationDegrees = 90.0f;
 	float aspectRatio = static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight);
@@ -279,7 +282,7 @@ bool Graphics::InitializeScene()
 	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToSpecularMap.c_str(), nullptr, m_specularTexture.GetAddressOf());
 	COM_ERROR_IF_FAILED(hr, "Failed to load specular map.");
 
-	CreateGroundQuads();
+	//CreateGroundQuads();
 
 	return true;
 }
@@ -594,6 +597,8 @@ void Graphics::RenderImGui() const
 	ImGui::DragFloat3("Rotation", s_focusObjRot, 0.01f, -2.0f * DirectX::XM_PI, 2.0f * DirectX::XM_PI);
 	ImGui::DragFloat3("Translation", s_focusObjTrans, 0.01, -100.0f, 100.0f);
 
+	ImGui::Checkbox("Rotate x", &s_contRotate);
+
 	ImGui::End();
 
 	ImGui::Render();
@@ -603,14 +608,26 @@ void Graphics::RenderImGui() const
 
 void Graphics::StartRender() const
 {
-	DirectX::XMFLOAT3 objScale = { s_focusObjScale[0], s_focusObjScale[1], s_focusObjScale[2] };
-	DirectX::XMFLOAT3 objRot = { s_focusObjRot[0], s_focusObjRot[1], s_focusObjRot[2] };
-	DirectX::XMFLOAT3 objTrans = { s_focusObjTrans[0], s_focusObjTrans[1], s_focusObjTrans[2] };
+	if (s_contRotate == false)
+	{
+		DirectX::XMFLOAT3 objScale = { s_focusObjScale[0], s_focusObjScale[1], s_focusObjScale[2] };
+		DirectX::XMFLOAT3 objRot = { s_focusObjRot[0], s_focusObjRot[1], s_focusObjRot[2] };
+		DirectX::XMFLOAT3 objTrans = { s_focusObjTrans[0], s_focusObjTrans[1], s_focusObjTrans[2] };
 
 
-	m_modelsInScene.at(0)->SetScale(objScale);
-	m_modelsInScene.at(0)->SetRotation(objRot);
-	m_modelsInScene.at(0)->SetPosition(objTrans);
+		m_modelsInScene.at(0)->SetScale(objScale);
+		m_modelsInScene.at(0)->SetRotation(objRot);
+		m_modelsInScene.at(0)->SetPosition(objTrans);
+	}
+	else
+	{
+		s_rotateVec.y += 0.001;
+		if (s_rotateVec.y > DirectX::XM_2PI)
+		{
+			s_rotateVec.y = 0.0f;
+		}
+		m_modelsInScene.at(0)->SetRotation(s_rotateVec);
+	}
 
 	CB_PS_pixelMaterialShader cPsMatData;
 	cPsMatData.Ka = m_modelsInScene.at(0)->GetKa();

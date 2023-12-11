@@ -2,7 +2,7 @@
 # Object "box 01":
 
 newmtl tex_box_01_d
-Ka 0 0 0
+Ka 0.2 0.2 0.2
 Kd 1 1 1
 Ks 0.1 0.1 0.1
 Ns 1.0

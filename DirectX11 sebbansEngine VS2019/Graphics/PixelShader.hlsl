@@ -34,7 +34,7 @@ float4 main(PS_INPUT input) : SV_TARGET
 	// use texture coordinates
 	float3 diffuseColor = diffuseMap.Sample(objSamplerState, input.inTexCoord);
 	float3 normalMapSample = normalMap.Sample(objSamplerState, input.inTexCoord);
-	// float3 occlusion = occlusionMap.Sample(objSamplerState, input.inTexCoord);
+	float3 occlusion = occlusionMap.Sample(objSamplerState, input.inTexCoord);
 	float3 specularSample = specularMap.Sample(objSamplerState, input.inTexCoord);
 	
 	// next I need lighting
@@ -42,7 +42,7 @@ float4 main(PS_INPUT input) : SV_TARGET
 	float3 Kd3 = float3(Kd[0], Kd[1], Kd[2]);
 	float3 Ks3 = float3(Ks[0], Ks[1], Ks[2]);
 	
-	float3 ambient = Ka * 0.8f;
+	float3 ambient = Ka * 0.2f;
 	
 	float3 finalNormal = input.inNormal + normalMapSample;
 	float3 diffuseFactor = max(0.0f, dot(finalNormal, lightDir));
