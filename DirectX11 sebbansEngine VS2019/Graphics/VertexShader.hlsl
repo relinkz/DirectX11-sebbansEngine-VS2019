@@ -30,13 +30,17 @@ VS_OUTPUT main(VS_INPUT input)
 	
 	// Place object in the world
 	float4 localToWorld = mul(float4(input.inPos, 1.0f), matWorld);
-	float4 ltwN = normalize(mul(float4(input.inNormal, 1.0f), matRot));
+	
+	float4x4 modelViewMatrix = matWorld * matWorld;
+	// Take the transpose of the inverse of the upper-left 3x3 part of the modelView matrix
+	float3x3 normalMatrix = matRot;
+	
 	// What the camera sees
 	float4 cameraRelative = mul(localToWorld, matCamera);
 	
 	// Apply world space to the model
 	output.outPosition = cameraRelative;
-	output.outNormal = ltwN;
+	output.outNormal = normalize(mul(input.inNormal, normalMatrix));
 	output.outTexCoord = input.inTexCoord;
 	
 	return output;
