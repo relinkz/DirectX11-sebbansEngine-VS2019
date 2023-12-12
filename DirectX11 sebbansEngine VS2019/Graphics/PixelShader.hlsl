@@ -27,7 +27,7 @@ cbuffer materialCBuff : register(b1)
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
-	float3 lightDir = float3(0.0f, 1.0f, 0.0f);
+	float3 lightDir = normalize(float3(1.0f, 1.0f, 0.0f));
 	float3 viewDir = float3(0.0f, 0.0f, 1.0f);
 	float3 sunColor = float3(1.0f, 1.0, 1.0f);
 	
@@ -48,7 +48,7 @@ float4 main(PS_INPUT input) : SV_TARGET
 	float3 diffuseFactor = max(0.0f, dot(finalNormal, lightDir));
 	float3 diffuse = Kd3 * diffuseColor * sunColor * diffuseFactor;
 	
-	float shininess = 4.0f;
+	float shininess = 2.0f;
 	float3 reflectionDir = reflect(-lightDir, finalNormal);
 	float specularFactor = pow(max(0.0f, dot(reflectionDir, viewDir)), shininess);
 	float3 specular = Ks3 * specularSample * sunColor * specularFactor;

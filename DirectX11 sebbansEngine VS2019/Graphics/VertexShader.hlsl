@@ -32,8 +32,7 @@ VS_OUTPUT main(VS_INPUT input)
 	float4 localToWorld = mul(float4(input.inPos, 1.0f), matWorld);
 	
 	float4x4 modelViewMatrix = matWorld * matWorld;
-	// Take the transpose of the inverse of the upper-left 3x3 part of the modelView matrix
-	float3x3 normalMatrix = matRot;
+	float3x3 normalMatrix = matWorld;
 	
 	// What the camera sees
 	float4 cameraRelative = mul(localToWorld, matCamera);
