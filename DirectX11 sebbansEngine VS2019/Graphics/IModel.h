@@ -17,6 +17,7 @@ public:
 
 	virtual std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device) = 0;
 	
+
 	// material stuff
 	virtual std::vector<std::wstring> GetDiffuseMaps() const = 0;
 	virtual std::vector<std::wstring> GetNormalMaps() const = 0;

@@ -40,7 +40,6 @@ float4 main(PS_INPUT input) : SV_TARGET
 	float3 occlusion = occlusionMap.Sample(objSamplerState, input.inTexCoord);
 	float3 specularSample = specularMap.Sample(objSamplerState, input.inTexCoord);
 	
-	// next I need lighting
 	float3 Ka3 = float3(Ks[0], Ks[1], Ks[2]);
 	float3 Kd3 = float3(Kd[0], Kd[1], Kd[2]);
 	float3 Ks3 = float3(Ks[0], Ks[1], Ks[2]);

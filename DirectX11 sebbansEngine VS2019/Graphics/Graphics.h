@@ -14,6 +14,8 @@
 #include <WICTextureLoader.h>
 #include "IModel.h"
 
+#include "SwapChain.h"
+
 class Graphics
 {
 public:
@@ -24,7 +26,7 @@ public:
 	~Graphics();
 private:
 	bool InitializeDirectX(HWND hwnd);
-	bool InitializeSwapChain(HWND hwnd);
+	// bool InitializeSwapChain(HWND hwnd);
 	bool InitializeRenderTargetViewWithSwapchain();
 	bool InitializeDepthStencil();
 	bool InitializeDepthStencilState();
@@ -56,9 +58,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
 	// The ID3D11DeviceContext interface represents a device context which generates rendering commands.
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext;
+	
 	// An IDXGISwapChain interface implements one or more surfaces for storing rendered data before presenting it to an output.
-	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapchain;
-	// A render-target-view interface identifies the render-target subresources that can be accessed during rendering.
+	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
+
+		// A render-target-view interface identifies the render-target subresources that can be accessed during rendering.
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	// Settings for the rasterizer, clock wise read order and wireframe
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;

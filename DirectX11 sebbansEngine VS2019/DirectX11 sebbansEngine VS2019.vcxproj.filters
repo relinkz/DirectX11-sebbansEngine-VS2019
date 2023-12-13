@@ -135,6 +135,9 @@
     <ClCompile Include="Graphics\Models.cpp">
       <Filter>Source Files\Graphics\Models</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\SwapChain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Helpers.h">
@@ -238,6 +241,9 @@
     </ClInclude>
     <ClInclude Include="Graphics\Models.h">
       <Filter>Header Files\Graphics\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\SwapChain.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

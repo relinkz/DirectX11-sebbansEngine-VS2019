@@ -171,6 +171,7 @@
     <ClCompile Include="Graphics\Models.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
     <ClCompile Include="Graphics\Shaders.cpp" />
+    <ClCompile Include="Graphics\SwapChain.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="WindowContainer.cpp" />
   </ItemGroup>
@@ -195,6 +196,7 @@
     <ClInclude Include="Graphics\ResourceBuffer.h" />
     <ClInclude Include="Graphics\ResourceBufferFactory.h" />
     <ClInclude Include="Graphics\ShaderFactory.h" />
+    <ClInclude Include="Graphics\SwapChain.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Graphics\IShaders.h" />
     <ClInclude Include="Graphics\IModel.h" />

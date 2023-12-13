@@ -69,7 +69,7 @@ void Graphics::RenderFrame() const
 
 	RenderImGui();
 
-	m_swapchain->Present(0, NULL);
+	m_swapChain->Present(0, NULL);
 }
 
 Graphics::~Graphics()
@@ -79,11 +79,14 @@ Graphics::~Graphics()
 
 bool Graphics::InitializeDirectX(HWND hwnd)
 {
-	if (!InitializeSwapChain(hwnd))
-	{
+	m_swapChain = swapChain::newSwapChain(hwnd,
+		m_windowWidth,
+		m_windowHeight,
+		m_device, m_deviceContext);
+	if (!m_swapChain){
 		return false;
 	}
-
+	
 	if (!InitializeRenderTargetViewWithSwapchain())
 	{
 		return false;
@@ -132,6 +135,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 	return true;
 }
 
+/*
 bool Graphics::InitializeSwapChain(HWND hwnd)
 {
 	std::vector<AdapterData> adapter = AdapterReader::GetAdapters();
@@ -183,12 +187,13 @@ bool Graphics::InitializeSwapChain(HWND hwnd)
 
 	return true;
 }
+*/
 
 bool Graphics::InitializeRenderTargetViewWithSwapchain()
 {
 	// get backbuffer as a 2D texture
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
-	HRESULT hr = m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf()));
+	HRESULT hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf()));
 	COM_ERROR_IF_FAILED(hr, "Failed to get texture from backbuffer.");
 
 
@@ -241,6 +246,7 @@ bool Graphics::InitializeDepthStencilState()
 	return true;
 }
 
+
 bool Graphics::InitializeShaders()
 {
 	ShaderFactory shaderFactory = ShaderFactory();
@@ -258,6 +264,8 @@ bool Graphics::InitializeShaders()
 
 	return true;
 }
+
+
 
 bool Graphics::InitializeScene()
 {
@@ -371,6 +379,7 @@ bool Graphics::InitializeFonts()
 
 	return true;
 }
+
 
 bool Graphics::InitializeSamplerStates()
 {
