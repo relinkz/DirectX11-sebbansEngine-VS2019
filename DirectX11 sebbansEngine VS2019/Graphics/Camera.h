@@ -14,6 +14,7 @@ public:
 
 	const XMVECTOR& GetPositionVector() const;
 	const XMFLOAT3& GetPositionFloat3() const;
+	const XMFLOAT4& GetPositionFloat4() const;
 	const XMVECTOR& GetRotationVector() const;
 	const XMFLOAT3& GetRotationFloat3() const;
 	const XMMATRIX& GetWorldMatrix() const;

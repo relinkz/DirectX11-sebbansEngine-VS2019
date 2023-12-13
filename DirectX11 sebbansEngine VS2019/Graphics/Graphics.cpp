@@ -9,8 +9,9 @@ static float s_focusObjAlpha = 1.0f;
 static float s_focusObjRot[3] = { 0.0f, 0.0f, 0.0f };
 static float s_focusObjTrans[3] = { 0.0f, 0.0f, 0.0f };
 static float s_focusObjScale[3] = { 1.0f, 1.0f, 1.0f };
+static float s_lightPos[3] = {0.0f, 10.0f, 0.0f };
 
-static bool s_contRotate = true;
+static bool s_contRotate = false;
 static DirectX::XMFLOAT3 s_rotateVec = DirectX::XMFLOAT3(0.0f, 0.0f, DirectX::XM_PI/4.0f);
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
@@ -598,6 +599,7 @@ void Graphics::RenderImGui() const
 	ImGui::DragFloat3("Scale", s_focusObjScale, 0.01f, 0.1f, 100.0f);
 	ImGui::DragFloat3("Rotation", s_focusObjRot, 0.01f, -2.0f * DirectX::XM_PI, 2.0f * DirectX::XM_PI);
 	ImGui::DragFloat3("Translation", s_focusObjTrans, 0.01, -100.0f, 100.0f);
+	ImGui::DragFloat3("Light position", s_lightPos, 0.01, -100.0f, 100.0f);
 
 	ImGui::Checkbox("Rotate x", &s_contRotate);
 
@@ -642,7 +644,10 @@ void Graphics::StartRender() const
 	UpdateCameraCB();
 
 	CB_PS_pixelAlphaShader cPsData;
-	cPsData.alpha = s_focusObjAlpha;
+	cPsData.alpha = DirectX::XMFLOAT4(s_focusObjAlpha, 0.0f, 0.0f, 0.0f);
+	cPsData.lightPos = DirectX::XMFLOAT4(s_lightPos[0], s_lightPos[1], s_lightPos[2], 0.0f);
+	cPsData.lightColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f);
+	cPsData.cameraPos = gameCamera->GetPositionFloat4();
 	UpdateDynamicPsConstantBuffer(0, cPsData);
 
 	// to render an object.

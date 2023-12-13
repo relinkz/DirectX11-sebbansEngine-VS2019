@@ -18,7 +18,10 @@ struct CB_VS_vertexShader
 
 struct CB_PS_pixelAlphaShader
 {
-	float alpha = 1.0f;
+	DirectX::XMFLOAT4 alpha;
+	DirectX::XMFLOAT4 lightPos;
+	DirectX::XMFLOAT4 lightColor;
+	DirectX::XMFLOAT4 cameraPos;
 };
 
 struct CB_PS_pixelMaterialShader

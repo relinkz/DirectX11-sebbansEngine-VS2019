@@ -14,7 +14,10 @@ SamplerState objSamplerState : SAMPLER : register(s0);
 
 cbuffer pixelCBuff : register(b0)
 {
-	float alpha;
+	float4 alpha;
+	float4 lightPos;
+	float4 lightColor;
+	float4 cameraPos;
 };
 
 cbuffer materialCBuff : register(b1)
@@ -27,9 +30,8 @@ cbuffer materialCBuff : register(b1)
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
-	float3 lightDir = normalize(float3(1.0f, 1.0f, 0.0f));
-	float3 viewDir = float3(0.0f, 0.0f, 1.0f);
-	float3 sunColor = float3(1.0f, 1.0, 1.0f);
+	float3 viewDir = normalize(cameraPos);
+	float3 sunColor = lightColor;
 	
 	// use texture coordinates
 	float3 diffuseColor = diffuseMap.Sample(objSamplerState, input.inTexCoord);
@@ -44,7 +46,11 @@ float4 main(PS_INPUT input) : SV_TARGET
 	
 	float3 ambient = Ka * 0.2f;
 	
-	float3 finalNormal = input.inNormal + normalMapSample;
+	float3 finalNormal = normalize(input.inNormal + normalMapSample);
+	float3 pixelPos = input.inPosition;
+	float3 lightPos3 = lightPos;
+	float3 lightDir = normalize(pixelPos - lightPos3);
+	//float3 lightDir = normalize(lightPos);
 	float3 diffuseFactor = max(0.0f, dot(finalNormal, lightDir));
 	float3 diffuse = Kd3 * diffuseColor * sunColor * diffuseFactor;
 	
@@ -55,5 +61,5 @@ float4 main(PS_INPUT input) : SV_TARGET
 	
 	float3 finalColor = ambient + diffuse + specular;
 	
-	return float4(finalColor, 1);
+	return float4(lightDir, 1);
 }

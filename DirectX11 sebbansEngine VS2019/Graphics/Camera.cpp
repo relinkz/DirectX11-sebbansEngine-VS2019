@@ -38,6 +38,12 @@ const XMFLOAT3& Camera::GetPositionFloat3() const
 	return m_pos;
 }
 
+const XMFLOAT4& Camera::GetPositionFloat4() const
+{
+	auto toReturn = XMFLOAT4(m_pos.x, m_pos.y, m_pos.z, 0.0f);
+	return toReturn;
+}
+
 const XMVECTOR& Camera::GetRotationVector() const
 {
 	return m_rotVector;
