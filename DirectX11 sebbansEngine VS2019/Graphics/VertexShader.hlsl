@@ -8,8 +8,9 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
 	float4 outPosition : SV_POSITION;
+	float4 outWorldPos : TEXCOORD0;
 	float3 outNormal : NORMAL;
-	float2 outTexCoord : TEXCOORD;
+	float2 outTexCoord : TEXCOORD1;
 };
 
 cbuffer CameraMatrix : register(b0)
@@ -31,7 +32,6 @@ VS_OUTPUT main(VS_INPUT input)
 	// Place object in the world
 	float4 localToWorld = mul(float4(input.inPos, 1.0f), matWorld);
 	
-	float4x4 modelViewMatrix = matWorld * matWorld;
 	float3x3 normalMatrix = matWorld;
 	
 	// What the camera sees
@@ -39,6 +39,7 @@ VS_OUTPUT main(VS_INPUT input)
 	
 	// Apply world space to the model
 	output.outPosition = cameraRelative;
+	output.outWorldPos = localToWorld;
 	output.outNormal = normalize(mul(input.inNormal, normalMatrix));
 	output.outTexCoord = input.inTexCoord;
 	

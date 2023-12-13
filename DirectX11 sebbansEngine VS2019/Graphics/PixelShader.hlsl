@@ -1,8 +1,9 @@
 struct PS_INPUT
 {
 	float4 inPosition : SV_POSITION;
-  float3 inNormal : COLOR;
-	float2 inTexCoord : TEXCOORD;
+	float4 inWorldPos : TEXCOORD0;
+	float3 inNormal : NORMAL;
+	float2 inTexCoord : TEXCOORD1;
 };
 
 Texture2D diffuseMap : TEXTURE : register(t0);
@@ -46,11 +47,12 @@ float4 main(PS_INPUT input) : SV_TARGET
 	
 	float3 ambient = Ka * 0.2f;
 	
-	float3 finalNormal = normalize(input.inNormal + normalMapSample);
-	float3 pixelPos = input.inPosition;
+	float3 finalNormal = input.inNormal * normalMapSample;
+	finalNormal = normalize(finalNormal);
+	
+	float3 pixelPos = input.inWorldPos;
 	float3 lightPos3 = lightPos;
-	float3 lightDir = normalize(pixelPos - lightPos3);
-	//float3 lightDir = normalize(lightPos);
+	float3 lightDir = normalize(lightPos3 - pixelPos);
 	float3 diffuseFactor = max(0.0f, dot(finalNormal, lightDir));
 	float3 diffuse = Kd3 * diffuseColor * sunColor * diffuseFactor;
 	
@@ -61,5 +63,5 @@ float4 main(PS_INPUT input) : SV_TARGET
 	
 	float3 finalColor = ambient + diffuse + specular;
 	
-	return float4(lightDir, 1);
+	return float4(finalColor, 1);
 }
