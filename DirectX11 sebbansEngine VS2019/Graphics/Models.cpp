@@ -181,6 +181,10 @@ void Model::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx) const
 
 	UpdateConstantBuffer(dctx, cPsMatData);
 
+	UINT offset = 0;
+	UINT stride = m_vertexes->GetStride();
+
+	dctx->IASetVertexBuffers(0, 1, m_vertexes->GetBufferAddress(), &stride, &offset);
 	dctx->IASetInputLayout(m_vShader->GetInputLayout());
 	dctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

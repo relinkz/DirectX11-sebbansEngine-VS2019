@@ -77,15 +77,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilTexture;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 
-	std::unique_ptr<IVertexShader> m_vertexShader;
-	std::unique_ptr<IPixelShader> m_pixelShader;
 	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
 	std::unique_ptr<DirectX::SpriteFont> m_spriteFont;
 	std::unique_ptr<Timer> m_fpsTimer;
 
 	// A buffer interface accesses a buffer resource, which is unstructured memory. Buffers typically store vertex or index data.
-	std::vector<std::unique_ptr<IResourceVertexBuffer>> m_vertexBuffer;
-	std::vector<std::unique_ptr<IResourceIndexBuffer>> m_indexBuffers;
 	std::vector<std::unique_ptr<IResourceConstantBuffer>> m_vsConstantBuffers;
 	std::vector<std::unique_ptr<IResourceConstantBuffer>> m_psConstantBuffers;
 

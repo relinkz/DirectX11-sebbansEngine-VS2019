@@ -202,7 +202,6 @@ bool Graphics::InitializeScene()
 	std::wstring pathToSpecularMap = model->GetOcclusionMaps().at(0);
 
 	auto vb = model->GetResourceVertexBuffer(m_device);
-	m_vertexBuffer.push_back(move(vb));
 	m_modelsInScene.emplace_back(move(model));
 
 	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToDiffuseMap.c_str(), nullptr, m_diffuseTexture.GetAddressOf());
@@ -457,7 +456,6 @@ void Graphics::CreateGroundQuads()
 			ground->SetScale(DirectX::XMFLOAT3(5.0f, 5.0f, 0.0f));
 
 			auto groundVb = ground->GetResourceVertexBuffer(m_device);
-			m_vertexBuffer.emplace_back(move(groundVb));
 			m_modelsInScene.emplace_back(move(ground));
 		}
 	}
@@ -568,13 +566,8 @@ void Graphics::StartRender()
 	// i need "Local verticies"
 	// i need "I need objTexture in ps shader"
 
-	for (size_t i = 0; i < m_vertexBuffer.size(); i++)
-	{
-		UINT offset = 0;
-		UINT stride = m_vertexBuffer.at(i)->GetStride();
-
-		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
-		
+	for (size_t i = 0; i < m_modelsInScene.size() ; i++)
+	{		
 		m_deviceContext->PSSetShaderResources(0, 1, m_diffuseTexture.GetAddressOf());
 		m_deviceContext->PSSetShaderResources(1, 1, m_normalTexture.GetAddressOf());
 		m_deviceContext->PSSetShaderResources(2, 1, m_occlusionTexture.GetAddressOf());
