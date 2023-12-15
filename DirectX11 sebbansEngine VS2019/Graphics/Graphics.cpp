@@ -4,6 +4,8 @@
 #include "AdapterReader.h"
 #include "ModelFactory.h"
 
+#include "SwapChain.h"
+
 static float s_focusObjAlpha = 1.0f;
 
 static float s_focusObjRot[3] = { 0.0f, 0.0f, 0.0f };
@@ -83,6 +85,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 		m_windowWidth,
 		m_windowHeight,
 		m_device, m_deviceContext);
+	
 	if (!m_swapChain){
 		return false;
 	}
@@ -134,60 +137,6 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 
 	return true;
 }
-
-/*
-bool Graphics::InitializeSwapChain(HWND hwnd)
-{
-	std::vector<AdapterData> adapter = AdapterReader::GetAdapters();
-
-	if (adapter.empty())
-	{
-		errorlogger::Log("No DXGI adapters (graphics card) found");
-		return false;
-	}
-
-	DXGI_SWAP_CHAIN_DESC scd;
-	ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
-	scd.BufferDesc.Width = m_windowWidth;
-	scd.BufferDesc.Height = m_windowHeight;
-	scd.BufferDesc.RefreshRate.Numerator = 60; // Is only used on fullscreen
-	scd.BufferDesc.RefreshRate.Denominator = 1;
-	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	scd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	scd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-	// Anti aliasing. this setting means NO ANTIALIASING
-	scd.SampleDesc.Count = 1; // The number of multisamples per pixel.
-	scd.SampleDesc.Quality = 0; // The image quality level. The higher the quality, the lower the performance.
-
-	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-
-	scd.BufferCount = 1;
-	scd.OutputWindow = hwnd;
-	scd.Windowed = TRUE;
-	scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
-	HRESULT hr = D3D11CreateDeviceAndSwapChain(
-		adapter.front().m_pAdapter,			// A pointer to the video adapter to use when creating a device
-		D3D_DRIVER_TYPE_UNKNOWN,				// The D3D_DRIVER_TYPE, which represents the driver type to create.
-		NULL,														// A handle to a DLL that implements a software rasterizer
-		NULL,														// Runtime layers to enable
-		NULL,														// D3D_feature_level, NULL means using an array of feature levels
-		0,															// The number of feature levels (above), set to 0 since we are not specifing any numbers
-		D3D11_SDK_VERSION,							// SDK version
-		&scd,														// Swap chain description, contains init params to the swap chain
-		m_swapchain.GetAddressOf(),			// IDXGISwapChain object that represents the swap chain used for rendering.
-		m_device.GetAddressOf(),				// Device Address
-		NULL,														// supported feature level
-		m_deviceContext.GetAddressOf()	// Device context address
-	);
-
-	COM_ERROR_IF_FAILED(hr, "Failed to create swapchain.");
-
-	return true;
-}
-*/
 
 bool Graphics::InitializeRenderTargetViewWithSwapchain()
 {

@@ -6,7 +6,6 @@
 
 namespace swapChain {
 
-namespace {
 	DXGI_SWAP_CHAIN_DESC createDesc(HWND hwnd,int windowWidth, int windowHeight) {
 		DXGI_SWAP_CHAIN_DESC scd;
 		ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
@@ -31,7 +30,6 @@ namespace {
 		scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 		return scd;
 	}
-}
 
 Microsoft::WRL::ComPtr<IDXGISwapChain> newSwapChain(HWND hwnd, int windowWidth,
 		int windowHeight,

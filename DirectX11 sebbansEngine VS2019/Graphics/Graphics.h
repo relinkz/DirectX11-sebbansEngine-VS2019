@@ -14,7 +14,6 @@
 #include <WICTextureLoader.h>
 #include "IModel.h"
 
-#include "SwapChain.h"
 
 class Graphics
 {
@@ -26,7 +25,6 @@ public:
 	~Graphics();
 private:
 	bool InitializeDirectX(HWND hwnd);
-	// bool InitializeSwapChain(HWND hwnd);
 	bool InitializeRenderTargetViewWithSwapchain();
 	bool InitializeDepthStencil();
 	bool InitializeDepthStencilState();
