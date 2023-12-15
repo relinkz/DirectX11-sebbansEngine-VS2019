@@ -5,6 +5,8 @@
 #include "../ComException.h"
 #include <sstream>
 #include "../ErrorLogger.h"
+#include <WICTextureLoader.h>
+
 
 using namespace DirectX;
 using namespace std;
@@ -108,55 +110,6 @@ unique_ptr<IResourceVertexBuffer> Model::GetResourceVertexBuffer(Microsoft::WRL:
 	return move(vb);
 }
 
-std::vector<std::wstring> Model::GetDiffuseMaps() const
-{
-	auto toRet = std::vector<std::wstring>(m_diffuseMap.size());
-	
-	for (int i = 0; i < m_diffuseMap.size(); i++)
-	{
-		std::wstringstream wss;
-		wss << "Data\\Textures\\" << m_diffuseMap.at(i).c_str();
-		toRet.at(i) = wss.str();
-	}
-
-	return toRet;
-}
-
-std::vector<std::wstring> Model::GetNormalMaps() const
-{
-	return m_normalMaps;
-}
-
-std::vector<std::wstring> Model::GetOcclusionMaps() const
-{
-	return m_occlusionMaps;
-}
-
-std::vector<std::wstring> Model::GetSpecularMaps() const
-{
-	return m_specularMaps;
-}
-
-DirectX::XMFLOAT4 Model::GetKa() const
-{
-	return m_Ka;
-}
-
-DirectX::XMFLOAT4 Model::GetKd() const
-{
-	return m_Kd;
-}
-
-DirectX::XMFLOAT4 Model::GetKs() const
-{
-	return m_Ks;
-}
-
-DirectX::XMFLOAT4 Model::GetNs() const
-{
-	return m_Ns;
-}
-
 void Model::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx) const
 {
 	// set vertexShader
@@ -174,10 +127,10 @@ void Model::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx) const
 
   // update pixel constant buffer
 	CB_PS_pixelMaterialShader cPsMatData;
-	cPsMatData.Ka = GetKa();
-	cPsMatData.Kd = GetKd();
-	cPsMatData.Ks = GetKs();
-	cPsMatData.Ns = GetNs();
+	cPsMatData.Ka = m_Ka;
+	cPsMatData.Kd = m_Kd;
+	cPsMatData.Ks = m_Ks;
+	cPsMatData.Ns = m_Ns;
 
 	UpdateConstantBuffer(dctx, cPsMatData);
 
@@ -187,6 +140,11 @@ void Model::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx) const
 	dctx->IASetVertexBuffers(0, 1, m_vertexes->GetBufferAddress(), &stride, &offset);
 	dctx->IASetInputLayout(m_vShader->GetInputLayout());
 	dctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	dctx->PSSetShaderResources(0, 1, m_diffuseTexture.GetAddressOf());
+	dctx->PSSetShaderResources(1, 1, m_normalTexture.GetAddressOf());
+	dctx->PSSetShaderResources(2, 1, m_occlusionTexture.GetAddressOf());
+	dctx->PSSetShaderResources(3, 1, m_specularTexture.GetAddressOf());
 
 	// call draw
 	dctx->Draw(m_vertexes->GetNrOfVerticies(), 0);
@@ -248,9 +206,19 @@ void Box::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microsoft::WR
 
 	InitializeConstantBuffers(device);
 
-	m_normalMaps.emplace_back(L"Data\\Textures\\tex_box_01_n.jpg");
-	m_specularMaps.emplace_back(L"Data\\Textures\\tex_box_01_s.jpg");
-	m_occlusionMaps.emplace_back(L"Data\\Textures\\tex_box_01_occ.jpg");
+	const std::wstring pathToDiffuseMap = L"Data\\Textures\\tex_box_01_d.jpg";
+	const std::wstring pathToNormalMap = L"Data\\Textures\\tex_box_01_n.jpg";
+	const std::wstring pathToOcclutionMap = L"Data\\Textures\\tex_box_01_s.jpg";
+	const std::wstring pathToSpecularMap = L"Data\\Textures\\tex_box_01_occ.jpg";
+
+	auto hr = DirectX::CreateWICTextureFromFile(device.Get(), pathToDiffuseMap.c_str(), nullptr, m_diffuseTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load diffuse map.");
+	hr = DirectX::CreateWICTextureFromFile(device.Get(), pathToNormalMap.c_str(), nullptr, m_normalTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load normal map.");
+	hr = DirectX::CreateWICTextureFromFile(device.Get(), pathToOcclutionMap.c_str(), nullptr, m_occlusionTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load occlusion map.");
+	hr = DirectX::CreateWICTextureFromFile(device.Get(), pathToSpecularMap.c_str(), nullptr, m_specularTexture.GetAddressOf());
+	COM_ERROR_IF_FAILED(hr, "Failed to load specular map.");
 	
 	const auto offset = DirectX::XMFLOAT3(0.0f, -0.5, 0.0f);
 	AddOffsetToLocalVerticies(offset);

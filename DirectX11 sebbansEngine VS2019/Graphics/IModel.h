@@ -20,14 +20,4 @@ public:
 	virtual std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device) = 0;
 
 	virtual void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx) const = 0;
-	// material stuff
-	virtual std::vector<std::wstring> GetDiffuseMaps() const = 0;
-	virtual std::vector<std::wstring> GetNormalMaps() const = 0;
-	virtual std::vector<std::wstring> GetOcclusionMaps() const = 0;
-	virtual std::vector<std::wstring> GetSpecularMaps() const = 0;
-
-	virtual DirectX::XMFLOAT4 GetKa() const = 0;
-	virtual DirectX::XMFLOAT4 GetKd() const = 0;
-	virtual DirectX::XMFLOAT4 GetKs() const = 0;
-	virtual DirectX::XMFLOAT4 GetNs() const = 0;
 };

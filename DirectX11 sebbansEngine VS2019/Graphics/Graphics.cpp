@@ -196,22 +196,7 @@ bool Graphics::InitializeScene()
 	auto model = modelFactory.CreateBox(m_device, m_deviceContext);
 	model->SetScale(DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
 
-	std::wstring pathToDiffuseMap = model->GetDiffuseMaps().at(0);
-	std::wstring pathToNormalMap = model->GetNormalMaps().at(0);
-	std::wstring pathToOcclutionMap = model->GetOcclusionMaps().at(0);
-	std::wstring pathToSpecularMap = model->GetOcclusionMaps().at(0);
-
-	auto vb = model->GetResourceVertexBuffer(m_device);
 	m_modelsInScene.emplace_back(move(model));
-
-	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToDiffuseMap.c_str(), nullptr, m_diffuseTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to load diffuse map.");
-	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToNormalMap.c_str(), nullptr, m_normalTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to load normal map.");
-	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToOcclutionMap.c_str(), nullptr, m_occlusionTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to load occlusion map.");
-	hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToSpecularMap.c_str(), nullptr, m_specularTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to load specular map.");
 
 	//CreateGroundQuads();
 
@@ -459,13 +444,6 @@ void Graphics::CreateGroundQuads()
 			m_modelsInScene.emplace_back(move(ground));
 		}
 	}
-	std::wstring pathToDiffuseMap = L"Data\\Textures\\gravel_01_diffuse.jpg";
-	std::wstring pathToNormalMap = L"Data\\Textures\\gravel_01_normal.jpg";
-	auto hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToDiffuseMap.c_str(), nullptr, m_grassDiffuseTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to load Diffuse map.");
-  hr = DirectX::CreateWICTextureFromFile(m_device.Get(), pathToNormalMap.c_str(), nullptr, m_grassNormalTexture.GetAddressOf());
-	COM_ERROR_IF_FAILED(hr, "Failed to load normal map.");
-
 }
 
 void Graphics::PreparePipeline() const
@@ -544,14 +522,6 @@ void Graphics::StartRender()
 		m_modelsInScene.at(0)->SetRotation(s_rotateVec);
 	}
 
-	CB_PS_pixelMaterialShader cPsMatData;
-	cPsMatData.Ka = m_modelsInScene.at(0)->GetKa();
-	cPsMatData.Kd = m_modelsInScene.at(0)->GetKd();
-	cPsMatData.Ks = m_modelsInScene.at(0)->GetKs();
-	cPsMatData.Ns = m_modelsInScene.at(0)->GetNs();
-
-	UpdateDynamicPsConstantBuffer(1, cPsMatData);
-
 	UpdateCameraCB();
 
 	CB_PS_pixelAlphaShader cPsData;
@@ -568,11 +538,6 @@ void Graphics::StartRender()
 
 	for (size_t i = 0; i < m_modelsInScene.size() ; i++)
 	{		
-		m_deviceContext->PSSetShaderResources(0, 1, m_diffuseTexture.GetAddressOf());
-		m_deviceContext->PSSetShaderResources(1, 1, m_normalTexture.GetAddressOf());
-		m_deviceContext->PSSetShaderResources(2, 1, m_occlusionTexture.GetAddressOf());
-		m_deviceContext->PSSetShaderResources(3, 1, m_specularTexture.GetAddressOf());
-
 		m_deviceContext->RSSetState(m_rasterizerStateCullFront.Get());
 		m_deviceContext->RSSetState(m_rasterizerState.Get());
 

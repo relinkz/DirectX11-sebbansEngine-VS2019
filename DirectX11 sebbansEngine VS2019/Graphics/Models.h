@@ -25,6 +25,11 @@ protected:
 	std::unique_ptr<IResourceConstantBuffer> m_vsCbuff;
 	std::unique_ptr<IResourceConstantBuffer> m_psCbuff;
 
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_diffuseTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_normalTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_occlusionTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_specularTexture;
+
 	std::unique_ptr<IVertexShader> m_vShader;
 	std::unique_ptr<IPixelShader> m_pShader;
 
@@ -43,16 +48,6 @@ protected:
 
 
 	std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>&) override;
-
-	virtual std::vector<std::wstring> GetDiffuseMaps() const override;
-	virtual std::vector<std::wstring> GetNormalMaps() const override;
-	virtual std::vector<std::wstring> GetOcclusionMaps() const override;
-	virtual std::vector<std::wstring> GetSpecularMaps() const override;
-
-	virtual DirectX::XMFLOAT4 GetKa() const override;
-	virtual DirectX::XMFLOAT4 GetKd() const override;
-	virtual DirectX::XMFLOAT4 GetKs() const override;
-	virtual DirectX::XMFLOAT4 GetNs() const override;
 
 	virtual void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx) const override;
 	void ReadObjFile(const std::string& file);
