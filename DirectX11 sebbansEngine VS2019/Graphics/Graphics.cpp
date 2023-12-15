@@ -199,13 +199,16 @@ bool Graphics::InitializeDepthStencilState()
 bool Graphics::InitializeShaders()
 {
 	ShaderFactory shaderFactory = ShaderFactory();
-	m_vertexShader = shaderFactory.CreateDefaultVertexShader(m_device);
+
+	const std::wstring vs1 = L"VertexShader";
+	m_vertexShader = shaderFactory.CreateDefaultVertexShader(m_device, vs1);
 	if (!m_vertexShader)
 	{
 		return false;
 	}
 
-	m_pixelShader = shaderFactory.CreateDefaultPixelShader(m_device);
+	const std::wstring ps1 = L"PixelShader";
+	m_pixelShader = shaderFactory.CreateDefaultPixelShader(m_device, ps1);
 	if (!m_pixelShader)
 	{
 		return false;
