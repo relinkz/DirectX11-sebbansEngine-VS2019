@@ -28,11 +28,6 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 			return false;
 		}
 
-		if (!InitializeShaders())
-		{
-			return false;
-		}
-
 		if (!InitializeScene())
 		{
 			return false;
@@ -63,7 +58,7 @@ bool Graphics::Initialize(HWND hwnd, const int width, const int height)
 	return true;
 }
 
-void Graphics::RenderFrame() const
+void Graphics::RenderFrame()
 {
 	PreparePipeline();
 
@@ -195,34 +190,10 @@ bool Graphics::InitializeDepthStencilState()
 	return true;
 }
 
-
-bool Graphics::InitializeShaders()
-{
-	ShaderFactory shaderFactory = ShaderFactory();
-
-	const std::wstring vs1 = L"VertexShader";
-	m_vertexShader = shaderFactory.CreateDefaultVertexShader(m_device, vs1);
-	if (!m_vertexShader)
-	{
-		return false;
-	}
-
-	const std::wstring ps1 = L"PixelShader";
-	m_pixelShader = shaderFactory.CreateDefaultPixelShader(m_device, ps1);
-	if (!m_pixelShader)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-
-
 bool Graphics::InitializeScene()
 {
 	auto modelFactory = ModelFactory();
-	auto model = modelFactory.CreateBox();
+	auto model = modelFactory.CreateBox(m_device, m_deviceContext);
 	model->SetScale(DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
 
 	std::wstring pathToDiffuseMap = model->GetDiffuseMaps().at(0);
@@ -472,20 +443,6 @@ void Graphics::UpdateCameraCB() const
 	UpdateDynamicVsConstantBuffer(0, cCameraMatrix);
 }
 
-void Graphics::UpdateModelCB(const int modelIndex) const
-{
-	CB_VS_vertexShader cWorldMatrix;
-
-	cWorldMatrix.m_matrix = m_modelsInScene.at(modelIndex)->GetWorldMatrix();
-	cWorldMatrix.m_matrix = DirectX::XMMatrixTranspose(cWorldMatrix.m_matrix);
-	cWorldMatrix.m_view = m_modelsInScene.at(modelIndex)->GetRotationMatrix();
-	cWorldMatrix.m_view = DirectX::XMMatrixTranspose(cWorldMatrix.m_view);
-
-	cWorldMatrix.m_view = m_modelsInScene.at(modelIndex)->GetRotationMatrix();
-
-	UpdateDynamicVsConstantBuffer(1, cWorldMatrix);
-}
-
 void Graphics::CreateGroundQuads()
 {
 	auto modelFactory = ModelFactory();
@@ -494,7 +451,7 @@ void Graphics::CreateGroundQuads()
 	{
 		for (int j = 0; j < 2; j++)
 		{
-			auto ground = modelFactory.CreateQuadModel();
+			auto ground = modelFactory.CreateQuadModel(m_device, m_deviceContext);
 			ground->SetRotation(DirectX::XMFLOAT3(DirectX::XM_PIDIV2, 0.0f, 0.0f));
 			ground->SetPosition(DirectX::XMFLOAT3(0.0f, -0.6f, j * 2.0f * 5.0f));
 			ground->SetScale(DirectX::XMFLOAT3(5.0f, 5.0f, 0.0f));
@@ -519,11 +476,6 @@ void Graphics::PreparePipeline() const
 	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), bgColor);
 	m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 
-	m_deviceContext->IASetInputLayout(m_vertexShader->GetInputLayout());
-	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	m_deviceContext->VSSetShader(m_vertexShader->GetShader(), NULL, 0);
-	m_deviceContext->PSSetShader(m_pixelShader->GetShader(), NULL, 0);
 	m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf()); // see pixel shader register
 
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
@@ -571,7 +523,7 @@ void Graphics::RenderImGui() const
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Graphics::StartRender() const
+void Graphics::StartRender()
 {
 	if (s_contRotate == false)
 	{
@@ -611,8 +563,8 @@ void Graphics::StartRender() const
 	cPsData.cameraPos = gameCamera->GetPositionFloat4();
 	UpdateDynamicPsConstantBuffer(0, cPsData);
 
-	// to render an object.
 	// i need "object world matrix cb in vertex shader"
+	// to render an object.
 	// i need "Local verticies"
 	// i need "I need objTexture in ps shader"
 
@@ -621,45 +573,16 @@ void Graphics::StartRender() const
 		UINT offset = 0;
 		UINT stride = m_vertexBuffer.at(i)->GetStride();
 
-
 		m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.at(i)->GetBufferAddress(), &stride, &offset);
-
-		if (i == 0)
-		{
-			UpdateModelCB(i);
-			
-			CB_PS_pixelMaterialShader cPsMatData;
-			cPsMatData.Ka = m_modelsInScene.at(0)->GetKa();
-			cPsMatData.Kd = m_modelsInScene.at(0)->GetKd();
-			cPsMatData.Ks = m_modelsInScene.at(0)->GetKs();
-			cPsMatData.Ns = m_modelsInScene.at(0)->GetNs();
-
-			UpdateDynamicPsConstantBuffer(1, cPsMatData);
-
-			m_deviceContext->PSSetShaderResources(0, 1, m_diffuseTexture.GetAddressOf());
-			m_deviceContext->PSSetShaderResources(1, 1, m_normalTexture.GetAddressOf());
-		}
-		else if (i == 1)
-		{
-			UpdateModelCB(i);
-
-			CB_PS_pixelMaterialShader cPsMatData;
-			cPsMatData.Ka = m_modelsInScene.at(1)->GetKa();
-			cPsMatData.Kd = m_modelsInScene.at(1)->GetKd();
-			cPsMatData.Ks = m_modelsInScene.at(1)->GetKs();
-			cPsMatData.Ns = m_modelsInScene.at(1)->GetNs();
-
-			UpdateDynamicPsConstantBuffer(1, cPsMatData);
-
-			m_deviceContext->PSSetShaderResources(0, 1, m_grassDiffuseTexture.GetAddressOf());
-			m_deviceContext->PSSetShaderResources(1, 1, m_grassNormalTexture.GetAddressOf());
-		}
+		
+		m_deviceContext->PSSetShaderResources(0, 1, m_diffuseTexture.GetAddressOf());
+		m_deviceContext->PSSetShaderResources(1, 1, m_normalTexture.GetAddressOf());
 		m_deviceContext->PSSetShaderResources(2, 1, m_occlusionTexture.GetAddressOf());
 		m_deviceContext->PSSetShaderResources(3, 1, m_specularTexture.GetAddressOf());
 
 		m_deviceContext->RSSetState(m_rasterizerStateCullFront.Get());
 		m_deviceContext->RSSetState(m_rasterizerState.Get());
 
-		m_deviceContext->Draw(m_vertexBuffer.at(i)->GetNrOfVerticies(), 0);
+		m_modelsInScene.at(i)->Draw(m_deviceContext);
 	}
 }

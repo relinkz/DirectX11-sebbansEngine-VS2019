@@ -19,7 +19,7 @@ class Graphics
 {
 public:
 	bool Initialize(HWND hwnd, const int width, const int height);
-	void RenderFrame() const;
+	void RenderFrame();
 	std::unique_ptr<Camera> gameCamera;
 
 	~Graphics();
@@ -28,7 +28,6 @@ private:
 	bool InitializeRenderTargetViewWithSwapchain();
 	bool InitializeDepthStencil();
 	bool InitializeDepthStencilState();
-	bool InitializeShaders();
 	bool InitializeScene();
 	bool InitializeViewport();
 	bool InitializeRasterizer();
@@ -44,13 +43,11 @@ private:
 	void DestroyImGui() const;
 
 	void UpdateCameraCB() const;
-	void UpdateModelCB(const int modelIndex) const;
-
 	void CreateGroundQuads();
 
 	void PreparePipeline() const;
 	void RenderImGui() const;
-	void StartRender() const;
+	void StartRender();
 
 	// The device interface represents a virtual adapter; it is used to create resources.
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;

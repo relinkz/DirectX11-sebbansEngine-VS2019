@@ -1,10 +1,30 @@
 #include "Models.h"
 #include "ResourceBufferFactory.h"
+#include "ShaderFactory.h"
 #include "../OBJ_Loader.h"
+#include "../ComException.h"
 #include <sstream>
+#include "../ErrorLogger.h"
 
 using namespace DirectX;
 using namespace std;
+
+void Model::InitializeConstantBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device)
+{
+	auto rFactory = ResourceBufferFactory();
+
+	m_vsCbuff = rFactory.CreateSimpleVsConstantBuffer(device);
+	if (!m_vsCbuff)
+	{
+		errorlogger::Log("Failed to create model constant buffer (vertex)");
+	}
+
+	m_psCbuff = rFactory.CreateMaterialPsConstantBuffer(device);
+	if (!m_psCbuff)
+	{
+		errorlogger::Log("Failed to create model constant buffer (pixel)");
+	}
+}
 
 void Model::SetPosition(const XMFLOAT3& pos)
 {
@@ -51,6 +71,29 @@ DirectX::XMMATRIX Model::GetRotationMatrix() const
 {
 	auto rotationMatrix = XMMatrixRotationRollPitchYaw(m_rot.x, m_rot.y, m_rot.z);
 	return rotationMatrix;
+}
+
+void Model::UpdateConstantBuffer(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx, CB_VS_vertexShader newData) const
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResourceVs;
+	auto hr = dctx->Map(m_vsCbuff->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResourceVs);
+	COM_ERROR_IF_FAILED(hr, "Failed to map ConstantBuffer.");
+
+	CopyMemory(mappedResourceVs.pData, &newData, sizeof(CB_VS_vertexShader));
+	dctx->Unmap(m_vsCbuff->GetBuffer(), 1);
+	dctx->VSSetConstantBuffers(1, 1, m_vsCbuff->GetBufferAddress());
+}
+
+void Model::UpdateConstantBuffer(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx, CB_PS_pixelMaterialShader newData) const
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResourcePs;
+	auto hr = dctx->Map(m_psCbuff->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResourcePs);
+	COM_ERROR_IF_FAILED(hr, "Failed to map ConstantBuffer.");
+
+	CopyMemory(mappedResourcePs.pData, &newData, sizeof(CB_PS_pixelMaterialShader));
+	dctx->Unmap(m_psCbuff->GetBuffer(), 1);
+	dctx->PSSetConstantBuffers(1, 1, m_psCbuff->GetBufferAddress());
+
 }
 
 unique_ptr<IResourceVertexBuffer> Model::GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>& device)
@@ -114,6 +157,37 @@ DirectX::XMFLOAT4 Model::GetNs() const
 	return m_Ns;
 }
 
+void Model::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx) const
+{
+	// set vertexShader
+	dctx->VSSetShader(m_vShader->GetShader(), NULL, 0);
+
+	// set pixelShader
+	dctx->PSSetShader(m_pShader->GetShader(), NULL, 0);
+
+	// update vertex constant buffer
+	CB_VS_vertexShader cWorldMatrix;
+	cWorldMatrix.m_matrix = DirectX::XMMatrixTranspose(GetWorldMatrix());
+	cWorldMatrix.m_view = DirectX::XMMatrixTranspose(GetRotationMatrix());
+
+	UpdateConstantBuffer(dctx, cWorldMatrix);
+
+  // update pixel constant buffer
+	CB_PS_pixelMaterialShader cPsMatData;
+	cPsMatData.Ka = GetKa();
+	cPsMatData.Kd = GetKd();
+	cPsMatData.Ks = GetKs();
+	cPsMatData.Ns = GetNs();
+
+	UpdateConstantBuffer(dctx, cPsMatData);
+
+	dctx->IASetInputLayout(m_vShader->GetInputLayout());
+	dctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// call draw
+	dctx->Draw(m_vertexes->GetNrOfVerticies(), 0);
+}
+
 void Model::ReadObjFile(const std::string& file)
 {
 	objl::Loader loader;
@@ -147,18 +221,28 @@ void Model::ReadObjFile(const std::string& file)
 	}
 }
 
-void QuadModel::Initialize()
+void QuadModel::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dCtx)
 {
 	ResetTransformation();
 
 	ReadObjFile("./Data/ObjFiles/QuadObj.obj");
 }
 
-void Box::Initialize()
+void Box::Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dCtx)
 {
 	ResetTransformation();
 
 	ReadObjFile("./Data/ObjFiles/box 01.obj");
+
+	auto shaderFactory = ShaderFactory();
+
+	const std::wstring vs1 = L"VertexShader";
+	m_vShader = shaderFactory.CreateDefaultVertexShader(device, vs1);
+
+	const std::wstring ps1 = L"PixelShader";
+	m_pShader = shaderFactory.CreateDefaultPixelShader(device, ps1);
+
+	InitializeConstantBuffers(device);
 
 	m_normalMaps.emplace_back(L"Data\\Textures\\tex_box_01_n.jpg");
 	m_specularMaps.emplace_back(L"Data\\Textures\\tex_box_01_s.jpg");
@@ -166,4 +250,6 @@ void Box::Initialize()
 	
 	const auto offset = DirectX::XMFLOAT3(0.0f, -0.5, 0.0f);
 	AddOffsetToLocalVerticies(offset);
+
+	m_vertexes = GetResourceVertexBuffer(device);
 }

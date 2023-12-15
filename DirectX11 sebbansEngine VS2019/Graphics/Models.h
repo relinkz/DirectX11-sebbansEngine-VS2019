@@ -21,6 +21,15 @@ protected:
 	DirectX::XMFLOAT4 m_Ks;
 	DirectX::XMFLOAT4 m_Ns;
 
+	std::unique_ptr<IResourceVertexBuffer> m_vertexes;
+	std::unique_ptr<IResourceConstantBuffer> m_vsCbuff;
+	std::unique_ptr<IResourceConstantBuffer> m_psCbuff;
+
+	std::unique_ptr<IVertexShader> m_vShader;
+	std::unique_ptr<IPixelShader> m_pShader;
+
+	void InitializeConstantBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device);
+
 	void SetPosition(const DirectX::XMFLOAT3&) override;
 	void SetRotation(const DirectX::XMFLOAT3&) override;
 	void SetScale(const DirectX::XMFLOAT3&) override;
@@ -29,6 +38,10 @@ protected:
 
 	DirectX::XMMATRIX GetWorldMatrix() const override;
 	DirectX::XMMATRIX GetRotationMatrix() const override;
+	void UpdateConstantBuffer(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx, CB_VS_vertexShader newData) const;
+	void UpdateConstantBuffer(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx, CB_PS_pixelMaterialShader newData) const;
+
+
 	std::unique_ptr<IResourceVertexBuffer> GetResourceVertexBuffer(Microsoft::WRL::ComPtr<ID3D11Device>&) override;
 
 	virtual std::vector<std::wstring> GetDiffuseMaps() const override;
@@ -41,17 +54,18 @@ protected:
 	virtual DirectX::XMFLOAT4 GetKs() const override;
 	virtual DirectX::XMFLOAT4 GetNs() const override;
 
+	virtual void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dctx) const override;
 	void ReadObjFile(const std::string& file);
 };
 
 class QuadModel : public Model
 {
 public:
-	void Initialize() override;
+	void Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dCtx) override;
 };
 
 class Box : public Model
 {
 public:
-	void Initialize() override;
+	void Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, Microsoft::WRL::ComPtr<ID3D11DeviceContext>& dCtx) override;
 };
