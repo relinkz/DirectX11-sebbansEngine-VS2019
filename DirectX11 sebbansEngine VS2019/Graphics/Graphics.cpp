@@ -11,9 +11,9 @@ static float s_focusObjAlpha = 1.0f;
 static float s_focusObjRot[3] = { 0.0f, 0.0f, 0.0f };
 static float s_focusObjTrans[3] = { 0.0f, 0.0f, 0.0f };
 static float s_focusObjScale[3] = { 1.0f, 1.0f, 1.0f };
-static float s_lightPos[3] = {0.0f, 10.0f, 0.0f };
+static float s_lightPos[3] = {3.0f, 3.0f, -3.0f };
 
-static bool s_contRotate = false;
+static bool s_contRotate = true;
 static DirectX::XMFLOAT3 s_rotateVec = DirectX::XMFLOAT3(0.0f, 0.0f, DirectX::XM_PI/4.0f);
 
 bool Graphics::Initialize(HWND hwnd, const int width, const int height)
@@ -530,11 +530,6 @@ void Graphics::StartRender()
 	cPsData.lightColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f);
 	cPsData.cameraPos = gameCamera->GetPositionFloat4();
 	UpdateDynamicPsConstantBuffer(0, cPsData);
-
-	// i need "object world matrix cb in vertex shader"
-	// to render an object.
-	// i need "Local verticies"
-	// i need "I need objTexture in ps shader"
 
 	for (size_t i = 0; i < m_modelsInScene.size() ; i++)
 	{		
